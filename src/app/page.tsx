@@ -37,7 +37,7 @@ export default function Home() {
           </nav>
         </header>
 
-        <section className="mx-auto flex w-full max-w-6xl flex-col items-center px-4 pt-12 text-center sm:px-8 md:pt-16">
+        <section className="mx-auto flex w-full max-w-7xl flex-col items-center px-4 pt-12 text-center sm:px-8 md:pt-16">
           <h1 className="max-w-[23ch] text-[2.5rem] leading-[1.05] font-semibold tracking-[-0.025em] sm:text-5xl md:text-[3.75rem]">
             Ask your papers anything. Every answer cites the page.
           </h1>
@@ -60,7 +60,7 @@ export default function Home() {
             width={1000}
             height={560}
             fetchPriority="high"
-            className="mt-12 -mb-px block h-auto w-full max-w-[1000px]"
+            className="mt-10 -mb-px block h-auto w-full max-w-[1180px]"
           />
         </section>
       </div>

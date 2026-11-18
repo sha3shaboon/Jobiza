@@ -26,25 +26,62 @@
   <!-- arch -->
   <path d="M60 560A440 440 0 0 1 940 560Z" fill="#183021" filter="url(#grain-light)"/>
 
-  <!-- doodles -->
-  <g fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".75">
-    <path d="M150 300c30-40 70 10 100-25s60 5 90-20" stroke="#f3b6ce" stroke-width="3"/>
-    <path d="M700 150c25 30 55-20 85 5s40 40 75 10" stroke="#f3b6ce" stroke-width="3"/>
-    <path d="M820 470c20-25 45 15 70-10" stroke="#9fc7a6" stroke-width="3"/>
-    <path d="M240 210c10 18 30 18 40 0s30-18 40 0" stroke="#9fc7a6" stroke-width="3"/>
-    <path d="M330 150l14 24h-28z" stroke="#f1eee4" stroke-width="2.5"/>
-    <path d="M880 260l10 18h-20z" stroke="#f1eee4" stroke-width="2.5"/>
-    <rect x="130" y="390" width="22" height="12" rx="2" transform="rotate(-18 141 396)" stroke="#f1eee4" stroke-width="2.5"/>
-    <rect x="610" y="120" width="20" height="11" rx="2" transform="rotate(24 620 125)" stroke="#f1eee4" stroke-width="2.5"/>
-    <path d="M470 115c0-10 8-16 16-16M492 115c0-10 8-16 16-16" stroke="#f6e7a8" stroke-width="4"/>
+  <!-- doodles: loose, hand-drawn, filling the arch -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#rough)">
+    <!-- big loops and squiggles -->
+    <path d="M96 352c26-58 78-44 96-12s-8 64-44 52 2-74 62-90 78 30 112 6" stroke="#f3b6ce" stroke-width="5"/>
+    <path d="M664 116c30 36 62-26 96 2s48 46 92 12c26-20 44-6 52 10" stroke="#f3b6ce" stroke-width="5"/>
+    <path d="M206 214c14 24 40 24 54 0s40-24 54 0 40 24 54 0" stroke="#9fc7a6" stroke-width="5"/>
+    <path d="M792 470c22-30 52 18 80-12s46 6 66-8" stroke="#9fc7a6" stroke-width="5"/>
+    <path d="M318 548c18-20 40 14 60-4s38 10 56-6" stroke="#f1eee4" stroke-width="4" opacity=".7"/>
+    <!-- spiral -->
+    <path d="M300 128c0-8 8-12 14-8s6 16-4 20-22-4-22-18 14-26 30-22 26 18 20 32" stroke="#f6e7a8" stroke-width="4.5"/>
+    <!-- zigzag -->
+    <path d="M846 396l14-16 14 16 14-16 14 16 14-16" stroke="#f6e7a8" stroke-width="4.5"/>
+    <!-- asterisk -->
+    <path d="M454 150v36M436 160l36 16M436 176l36-16" stroke="#f1eee4" stroke-width="5"/>
+    <!-- big quote marks -->
+    <path d="M500 96c0-16 10-26 24-28M532 96c0-16 10-26 24-28" stroke="#f6e7a8" stroke-width="7"/>
+    <!-- outlined shapes -->
+    <path d="M336 214l20 34h-40z" stroke="#f1eee4" stroke-width="4"/>
+    <path d="M884 250l15 26h-30z" stroke="#f1eee4" stroke-width="4"/>
+    <path d="M150 230l14 24h-28z" stroke="#f3b6ce" stroke-width="4"/>
+    <rect x="118" y="404" width="34" height="18" rx="3" transform="rotate(-18 135 413)" stroke="#f1eee4" stroke-width="4"/>
+    <rect x="600" y="104" width="30" height="16" rx="3" transform="rotate(24 615 112)" stroke="#f1eee4" stroke-width="4"/>
+    <circle cx="790" cy="432" r="13" stroke="#f3b6ce" stroke-width="4"/>
+    <circle cx="244" cy="292" r="10" stroke="#f6e7a8" stroke-width="4"/>
+    <path d="M394 116v22M383 127h22" stroke="#9fc7a6" stroke-width="4.5"/>
+    <path d="M926 470v20M916 480h20" stroke="#f1eee4" stroke-width="4"/>
+    <!-- dashed arrow: from the highlighted paper back to the magnifier -->
+    <path d="M868 196c-20-46-80-58-110-32" stroke="#f1eee4" stroke-width="3.5" stroke-dasharray="2 9" opacity=".85"/>
+    <path d="M770 152l-14 12 18 4" stroke="#f1eee4" stroke-width="3.5"/>
   </g>
+  <!-- little leaves -->
+  <g filter="url(#grain)" stroke="#16291d" stroke-width="2.5" stroke-linejoin="round">
+    <path d="M92 458c-6-26 10-44 36-46-2 26-16 44-36 46z" fill="#9fc7a6"/>
+    <path d="M92 458c10-16 22-28 34-44" fill="none"/>
+    <path d="M900 444c22-14 44-8 54 14-24 8-44 4-54-14z" fill="#7fb08a"/>
+    <path d="M900 444c18 6 34 10 52 14" fill="none"/>
+    <path d="M424 268c-4-20 8-34 28-36-2 20-12 34-28 36z" fill="#9fc7a6"/>
+  </g>
+  <!-- confetti -->
   <g filter="url(#grain)">
-    <circle cx="410" cy="180" r="9" fill="#e8604c"/>
-    <circle cx="560" cy="95" r="11" fill="#9fc7a6"/>
-    <circle cx="200" cy="350" r="7" fill="#f6e7a8"/>
-    <circle cx="905" cy="390" r="9" fill="#f3b6ce"/>
-    <circle cx="760" cy="420" r="6" fill="#e8604c"/>
-    <circle cx="95" cy="520" r="8" fill="#3a3bb3"/>
+    <circle cx="410" cy="196" r="12" fill="#e8604c"/>
+    <circle cx="570" cy="86" r="14" fill="#9fc7a6"/>
+    <circle cx="196" cy="160" r="10" fill="#f6e7a8"/>
+    <circle cx="210" cy="372" r="9" fill="#f6e7a8"/>
+    <circle cx="912" cy="372" r="12" fill="#f3b6ce"/>
+    <circle cx="764" cy="410" r="8" fill="#e8604c"/>
+    <circle cx="92" cy="528" r="11" fill="#3a3bb3"/>
+    <circle cx="616" cy="470" r="9" fill="#3a3bb3"/>
+    <circle cx="470" cy="232" r="7" fill="#f3b6ce"/>
+    <circle cx="840" cy="530" r="10" fill="#f6e7a8"/>
+  </g>
+  <!-- stray blossoms -->
+  <g filter="url(#grain)" fill="#f3b6ce" stroke="#16291d" stroke-width="3">
+    <use href="#blossom" transform="translate(116 274) scale(.4)"/>
+    <use href="#blossom" transform="translate(872 488) scale(.32)"/>
+    <use href="#blossom" transform="translate(436 380) scale(.3)"/>
   </g>
 
   <!-- shelves -->
