@@ -1,5 +1,7 @@
 # Jobiza
 
+**Jobiza · خُبَّيْزَة**: plant your sources, watch your research grow.
+
 An AI research assistant for students and academics, powered by Claude. Chat with your papers, build
 literature reviews and write with every claim cited. Users bring their own Anthropic API key.
 

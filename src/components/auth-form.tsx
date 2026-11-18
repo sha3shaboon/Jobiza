@@ -72,7 +72,7 @@ export function AuthForm({ mode, providers }: { mode: Mode; providers: { google:
     <div className="card">
       <h1 className="mb-1 font-serif text-2xl font-semibold">{mode === "sign-in" ? "Welcome back" : "Create your account"}</h1>
       <p className="mb-6 text-sm text-muted">
-        {mode === "sign-in" ? "Sign in to your research library." : "Start building your research library."}
+        {mode === "sign-in" ? "Sign in to your research library." : "Plant the first seeds of your research library."}
       </p>
 
       {hasSocial && (

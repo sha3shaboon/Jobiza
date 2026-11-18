@@ -1,18 +1,21 @@
 import Link from "next/link";
-import { Logo } from "@/components/logo";
+import { Logo, MallowMark } from "@/components/logo";
 
-const pillars = [
+const stages = [
   {
+    verb: "Plant",
     title: "Chat with your library",
-    body: "Upload PDFs or import by DOI. Ask questions and get answers where every sentence links to the exact page it came from.",
+    body: "Drop in PDFs or import by DOI. Ask questions and get answers where every sentence links back to the exact page it came from.",
   },
   {
-    title: "Build literature reviews",
-    body: "Search Semantic Scholar, OpenAlex, arXiv and PubMed. Let Claude research for you, or screen papers rigorously with a PRISMA log.",
+    verb: "Spread",
+    title: "Grow a literature review",
+    body: "Let it reach across Semantic Scholar, OpenAlex, arXiv and PubMed. It can research on its own, or you can screen every paper yourself with a PRISMA log.",
   },
   {
+    verb: "Harvest",
     title: "Write with citations",
-    body: "Draft in an editor that knows your sources. Insert citations in any style, export to Word, PDF or LaTeX, and check every claim.",
+    body: "Draft in an editor that knows your sources. Cite in any style, export to Word, PDF or LaTeX, and check every claim before you submit.",
   },
 ];
 
@@ -28,35 +31,76 @@ export default function Home() {
       </header>
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-6">
-        <section className="py-16 sm:py-24">
-          <p className="mb-4 text-sm font-medium uppercase tracking-wider text-muted">AI research assistant · powered by Claude</p>
-          <h1 className="max-w-3xl font-serif text-4xl leading-tight font-semibold sm:text-6xl">
-            Research with sources you can actually check.
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg text-muted">
-            Jobiza turns your papers into a knowledge base you can question, helps you find the literature you&apos;re
-            missing, and keeps every claim you write tied to its source. Bring your own Anthropic API key and pay only
-            for what you use.
+        <section className="relative py-16 sm:py-24">
+          <MallowMark
+            size={360}
+            className="pointer-events-none absolute -top-4 right-[-60px] hidden opacity-30 md:block lg:right-0"
+          />
+          <p className="mb-4 text-sm font-medium uppercase tracking-wider text-stem">
+            A research assistant powered by Claude
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/sign-up" className="btn-primary px-6 py-3 text-base">Create a free account</Link>
+          <h1 className="relative max-w-3xl font-serif text-4xl leading-tight font-semibold sm:text-6xl">
+            Plant your sources.
+            <br />
+            <span className="text-accent">Watch your research grow.</span>
+          </h1>
+          <p className="relative mt-6 max-w-2xl text-lg text-muted">
+            Add your papers and your library grows its own connections, summaries and citations, so every claim you
+            write stays rooted in a source you can check. Bring your own Anthropic API key and pay only for what you
+            use.
+          </p>
+          <div className="relative mt-8 flex flex-wrap gap-3">
+            <Link href="/sign-up" className="btn-primary px-6 py-3 text-base">Start your library</Link>
             <Link href="/sign-in" className="btn-secondary px-6 py-3 text-base">Sign in with ORCID or Google</Link>
           </div>
         </section>
 
-        <section className="grid gap-4 pb-24 md:grid-cols-3">
-          {pillars.map((p, i) => (
-            <div key={p.title} className="card">
-              <div className="mb-3 font-mono text-xs text-muted">0{i + 1}</div>
-              <h2 className="mb-2 font-serif text-xl font-semibold">{p.title}</h2>
-              <p className="text-sm leading-relaxed text-muted">{p.body}</p>
+        <section className="grid gap-4 pb-20 md:grid-cols-3">
+          {stages.map((s, i) => (
+            <div key={s.verb} className="card">
+              <div className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-stem">
+                <span className="font-mono text-muted">0{i + 1}</span> {s.verb}
+              </div>
+              <h2 className="mb-2 font-serif text-xl font-semibold">{s.title}</h2>
+              <p className="text-sm leading-relaxed text-muted">{s.body}</p>
             </div>
           ))}
+        </section>
+
+        <section id="name" className="mb-24 grid items-center gap-10 rounded-2xl bg-accent-soft px-6 py-12 sm:px-12 md:grid-cols-[1fr_1.4fr]">
+          <div className="text-center md:text-left">
+            <MallowMark size={72} className="mx-auto mb-4 md:mx-0" />
+            <p lang="ar" dir="rtl" className="font-arabic text-6xl leading-tight text-accent sm:text-7xl md:text-left">
+              خُبَّيْزَة
+            </p>
+            <p className="mt-3 text-sm text-muted">
+              <em>khubbayza</em> · <em>Malva parviflora</em> · cheeseweed
+            </p>
+          </div>
+          <div className="grid gap-4 leading-relaxed">
+            <h2 className="font-serif text-2xl font-semibold sm:text-3xl">About the name</h2>
+            <p>
+              Nobody plants <em>khubbayza</em>. After the winter rains it comes up on its own: in fields, along
+              roadsides, through cracks in the pavement. Families across the Levant and Egypt have foraged and cooked it
+              for generations. It&apos;s humble, resilient and quietly nourishing.
+            </p>
+            <p>
+              That&apos;s what we want Jobiza to be: something that grows out of whatever sources you give it, thrives
+              on a student budget, and feeds the work you&apos;re actually trying to do.
+            </p>
+            <p className="text-sm text-muted">
+              Our logo is a cluster of its unopened buds: small green globes, sepals twisted shut, a blush of petal
+              just showing. Every idea you plant here is a bud like that, about to open. (The English name,
+              cheeseweed, comes from its seed pods, which look like tiny wheels of cheese.)
+            </p>
+          </div>
         </section>
       </main>
 
       <footer className="border-t border-border py-6 text-center text-xs text-muted">
-        Your papers and API key stay in your account. Keys are encrypted at rest.
+        <span className="font-serif">Jobiza</span> ·{" "}
+        <span lang="ar" dir="rtl" className="font-arabic">خُبَّيْزَة</span> · grows wherever you plant it. Your papers
+        and API key stay in your account, and keys are encrypted at rest.
       </footer>
     </div>
   );

@@ -12,13 +12,13 @@ export default async function Dashboard() {
     { done: true, label: "Create your account", href: null },
     { done: settings.hasApiKey, label: "Add your Anthropic API key", href: "/app/settings" },
     { done: Boolean(settings.model), label: "Choose a Claude model", href: "/app/settings" },
-    { done: false, label: "Upload your first paper (coming in phase 2)", href: null },
+    { done: false, label: "Plant your first paper (coming in phase 2)", href: null },
   ];
 
   return (
     <div className="mx-auto max-w-3xl">
       <h1 className="font-serif text-3xl font-semibold">Hello, {user.name.split(" ")[0]}</h1>
-      <p className="mt-2 text-muted">Let&apos;s get your research workspace ready.</p>
+      <p className="mt-2 text-muted">Let&apos;s get your library ready to grow.</p>
 
       <section className="card mt-8">
         <h2 className="mb-4 font-semibold">Getting started</h2>

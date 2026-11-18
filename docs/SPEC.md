@@ -30,3 +30,11 @@ every claim traced to a source.
 3. **Literature review** — source connectors, agentic deep-research job with progress streaming, screening mode + PRISMA log, comparison matrix.
 4. **Writing editor** — rich-text editor with inline citations, CSL styles, Zotero/BibTeX, claim checker, DOCX/PDF/LaTeX export.
 5. **Polish** — public API docs for future desktop/mobile clients, tests, deployment guide.
+
+## Brand
+
+- **Name:** Jobiza, from خُبَّيْزَة (*khubbayza*, *Malva parviflora*, cheeseweed), the wild mallow that comes up on its own after the rains. The Arabic name is shown beside the wordmark.
+- **Idea:** a self-growing library. You plant your sources and your research grows from them. The landing-page stages are Plant (library), Spread (literature review) and Harvest (writing).
+- **Mark:** a cluster of the plant's unopened buds: a large bud seen from above, with five twisted sepals and a blush of petal just showing, plus two side buds on a short stem. Source: `src/components/logo.tsx` (theme-aware) and `src/app/icon.svg` (favicon).
+- **Palette:** bud and leaf greens (primary), a petal blush (secondary), sun-dried creams (background). Tokens live in `src/app/globals.css`.
+- **Type:** Source Serif 4 (headings), Geist (UI), Noto Naskh Arabic (Arabic name).

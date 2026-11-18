@@ -1,32 +1,50 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f7f6f2;
-  --surface: #ffffff;
-  --surface-2: #f0eee8;
-  --border: #e2dfd6;
-  --text: #1b1d22;
-  --muted: #5f6470;
-  --accent: #1f3a5f;
-  --accent-fg: #ffffff;
-  --accent-soft: #e6ecf4;
+  /* Field palette: bud and leaf greens, a blush of unopened petal, sun-dried soil creams */
+  --bg: #f7f4ec;
+  --surface: #fffdf8;
+  --surface-2: #efebe0;
+  --border: #e1dccd;
+  --text: #1f241c;
+  --muted: #5e6558;
+  --accent: #3e6b35;
+  --accent-fg: #fbfaf5;
+  --accent-soft: #e5eedd;
+  --stem: #a84a72;
+  --stem-soft: #f6e5ec;
   --danger: #a3302a;
-  --success: #2f6b3f;
+  --success: #3e6b35;
+  /* logo */
+  --bud: #b7d48f;
+  --bud-shade: #a9c97f;
+  --bud-edge: #6c9a4c;
+  --bud-seam: #7fab5c;
+  --bud-tip: #8a6a4a;
+  --petal-peek: #eab3c7;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #121418;
-    --surface: #1a1d23;
-    --surface-2: #222630;
-    --border: #2e333d;
-    --text: #e8e6e1;
-    --muted: #9aa0ab;
-    --accent: #8fb3e0;
-    --accent-fg: #0f1520;
-    --accent-soft: #1f2a3a;
+    --bg: #12150f;
+    --surface: #1a1e16;
+    --surface-2: #232820;
+    --border: #2f362a;
+    --text: #e9e7df;
+    --muted: #9da493;
+    --accent: #9cc48a;
+    --accent-fg: #11160d;
+    --accent-soft: #24301e;
+    --stem: #eaa3c0;
+    --stem-soft: #3a2430;
     --danger: #e0786f;
-    --success: #7fc08f;
+    --success: #9cc48a;
+    --bud: #9cc477;
+    --bud-shade: #88b265;
+    --bud-edge: #c2dea6;
+    --bud-seam: #6d9a50;
+    --bud-tip: #4c3a28;
+    --petal-peek: #f0bdd0;
   }
 }
 
@@ -42,9 +60,12 @@
   --color-accent-soft: var(--accent-soft);
   --color-danger: var(--danger);
   --color-success: var(--success);
+  --color-stem: var(--stem);
+  --color-stem-soft: var(--stem-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-serif);
+  --font-arabic: var(--font-arabic);
 }
 
 body {
