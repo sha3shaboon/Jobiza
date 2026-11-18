@@ -14,8 +14,8 @@ See [`docs/SPEC.md`](docs/SPEC.md) for the product decisions and the phased buil
 | 1. Foundation | Docker stack, DB schema, auth (magic link, password, Google, ORCID), encrypted BYOK, model picker, worker | ✅ done |
 | 2. Library + chat | PDF/DOI/URL ingest, OCR, local embeddings, hybrid search, cited chat, PDF viewer | ✅ done |
 | 3. Literature review | Source connectors, agentic + screening modes, PRISMA log, matrix | ✅ done |
-| 4. Writing editor | CSL citations, Zotero/BibTeX, claim checker, DOCX/PDF/LaTeX export | next |
-| 5. Polish | API docs for desktop/mobile clients, deploy guide | planned |
+| 4. Writing editor | CSL citations, Zotero/BibTeX, claim checker, DOCX/PDF/LaTeX export | ✅ done |
+| 5. Polish | API docs for desktop/mobile clients, deploy guide | next |
 
 ## Run it with Docker (recommended)
 
@@ -90,6 +90,16 @@ ORCID usually doesn't share email addresses, so ORCID accounts are keyed on the 
 
 Rotating `ENCRYPTION_KEY` makes stored keys unreadable, so users would have to re-enter them.
 
+## How the writing editor works
+
+Documents are rich text (TipTap) with citations stored as inline nodes that point at papers in your library, with an optional page. The labels and the reference list are generated live in the chosen style, so switching style re-numbers and reformats everything.
+
+- **Citation styles**: APA 7, MLA 9, Chicago (author-date), IEEE, Vancouver and Harvard (Cite Them Right). The CSL files are vendored in `src/lib/writing/csl/` (CC BY-SA, from the Citation Style Language project) and rendered with citation-js, so numbering follows first use and same-author-same-year works are disambiguated.
+- **Draft with Claude**: Claude writes the passage you ask for from your library only, and every claim comes back as a real citation node with the page it used. You can limit it to chosen papers.
+- **Claim checker**: each sentence of five or more words (up to 40 per run) is checked against passages from the papers it cites. Uncited sentences are matched against your library and flagged as needing a citation when a passage supports them, with a one-click "Add this citation". Every evidence quote is matched against the stored source text before it's shown. If Claude's quote can't be found, the verdict becomes "Couldn't verify" instead of "Supported".
+- **References in**: import BibTeX, RIS or CSL-JSON files (Zotero, Mendeley, EndNote exports), or pull a Zotero library or collection with a read-only API key. The key is used once and never stored. References with a DOI fetch open-access full text when available; the rest are indexed by abstract, or kept as cite-only entries. Duplicates are skipped by DOI, or by title and year.
+- **Export**: Word (.docx), PDF, LaTeX (a zip with `main.tex` using biblatex in the matching style, and `references.bib`), Markdown, or just the BibTeX of the cited papers.
+
 ## API (for future desktop and mobile clients)
 
 Every endpoint accepts a session cookie or `Authorization: Bearer <token>`. The token comes from the `set-auth-token` header on sign-in.
@@ -117,6 +127,14 @@ Every endpoint accepts a session cookie or `Authorization: Bearer <token>`. The 
 | PATCH | `/api/v1/reviews/:id/records/:recordId` | Screening decision `{ screening, reason? }` |
 | POST | `/api/v1/reviews/:id/accept-suggestions` | Apply Claude's suggestions to undecided records |
 | GET | `/api/v1/reviews/:id/export` | Screening log as CSV |
+| POST | `/api/v1/papers/import-references` | Import a BibTeX, RIS or CSL-JSON file (multipart, field `file`) |
+| POST | `/api/v1/papers/import-zotero` | Import `{ libraryType: "user" \| "group", libraryId, apiKey, collectionKey? }` |
+| GET / POST | `/api/v1/documents` | List; create `{ title? }` |
+| GET / PATCH / DELETE | `/api/v1/documents/:id` | Document; save `{ title?, content?, citationStyle? }`; delete |
+| POST | `/api/v1/documents/:id/draft` | Claude drafts `{ instruction, scopePaperIds? }`; returns document nodes with citations |
+| POST | `/api/v1/documents/:id/check` | Run the claim checker; returns and saves the checks |
+| GET | `/api/v1/documents/:id/export?format=` | `docx`, `pdf`, `latex` (zip), `markdown` or `bibtex` |
+| POST | `/api/v1/citations/render` | Labels and bibliography for `{ content, style }` |
 
 ## Project layout
 

@@ -34,7 +34,7 @@ export type PaperSummary = {
   venue: string | null;
   doi: string | null;
   url: string | null;
-  source: "upload" | "doi" | "url";
+  source: "upload" | "doi" | "url" | "reference";
   status: "queued" | "processing" | "ready" | "failed";
   statusDetail: string | null;
   pageCount: number | null;
@@ -189,4 +189,49 @@ export async function libraryCounts(userId: string) {
     .from(schema.paper)
     .where(eq(schema.paper.workspaceId, ws.id));
   return { total: row?.total ?? 0 };
+}
+
+/** Add references from BibTeX/RIS/CSL-JSON or Zotero. Skips DOIs already in the library. */
+export async function addReferences(
+  userId: string,
+  refs: { title: string; authors: { name: string }[]; year?: number; venue?: string; doi?: string; url?: string; abstract?: string }[],
+) {
+  const ws = await workspaceFor(userId);
+  // Dedupe by DOI, or by title + year for references without one.
+  const titleKey = (title: string, year?: number | null) => `${title.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim()}|${year ?? ""}`;
+  const rows = await db()
+    .select({ doi: schema.paper.doi, title: schema.paper.title, year: schema.paper.year })
+    .from(schema.paper)
+    .where(eq(schema.paper.workspaceId, ws.id));
+  const existing = new Set(rows.flatMap((r) => (r.doi ? [r.doi.toLowerCase()] : [])));
+  const titles = new Set(rows.map((r) => titleKey(r.title, r.year)));
+  let added = 0;
+  let skipped = 0;
+  for (const ref of refs.slice(0, 500)) {
+    const doi = ref.doi?.toLowerCase();
+    const tk = titleKey(ref.title, ref.year);
+    if (doi ? existing.has(doi) : titles.has(tk)) {
+      skipped++;
+      continue;
+    }
+    const id = randomUUID();
+    await db().insert(schema.paper).values({
+      id,
+      workspaceId: ws.id,
+      addedBy: userId,
+      source: ref.doi ? "doi" : "reference",
+      title: ref.title,
+      authors: ref.authors,
+      year: ref.year,
+      venue: ref.venue,
+      doi: ref.doi,
+      url: ref.url,
+      abstract: ref.abstract,
+    });
+    if (doi) existing.add(doi);
+    titles.add(tk);
+    await enqueueIngest(id);
+    added++;
+  }
+  return { added, skipped, truncated: refs.length > 500 };
 }

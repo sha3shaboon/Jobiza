@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "@/lib/client-api";
 import { paperByline } from "@/lib/paper-format";
 import type { PaperSummary } from "@/server/library";
+import { ImportReferences } from "./import-references";
 
 const POLL_MS = 3000;
 
@@ -41,6 +42,7 @@ export function LibraryView({ initialPapers }: { initialPapers: PaperSummary[] }
       </div>
 
       <AddSources onAdded={added} />
+      <ImportReferences onImported={() => void refresh()} />
 
       <section aria-labelledby="papers-title" className="mt-12">
         <h2 id="papers-title" className="sr-only">

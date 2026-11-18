@@ -54,6 +54,15 @@ async function fetchPdf(url: string): Promise<Buffer | null> {
   }
 }
 
+/** A paper with metadata but no text: citable, not searchable. */
+async function finishReferenceOnly(paperId: string) {
+  await update(paperId, {
+    status: "ready",
+    metadataOnly: true,
+    statusDetail: "No abstract or open-access text was found, so this paper can be cited but not searched. Upload the PDF to search it.",
+  });
+}
+
 /**
  * Turn a queued paper into searchable pages and chunks.
  * Idempotent: re-running replaces earlier pages and chunks.
@@ -76,7 +85,15 @@ export async function ingestPaper(paperId: string): Promise<void> {
     let pages: Page[] = [];
     let downloadNote: string | null = null;
 
-    if (paper.source === "upload") {
+    if (paper.source === "reference") {
+      // Imported from BibTeX, RIS or Zotero: cite it; search the abstract if there is one.
+      if (!paper.abstract) {
+        await finishReferenceOnly(paperId);
+        return;
+      }
+      pages = [{ pageNumber: 1, text: paper.abstract, method: "web" }];
+      await patch({ metadataOnly: true });
+    } else if (paper.source === "upload") {
       if (!paper.fileKey) throw new IngestError("The uploaded file is missing.");
       pdf = await loadFile(paper.fileKey);
     } else if (paper.source === "doi") {
@@ -88,7 +105,9 @@ export async function ingestPaper(paperId: string): Promise<void> {
       if (!pdf) {
         const abstract = current.abstract ?? meta?.abstract;
         if (!abstract) {
-          throw new IngestError("No open-access version was found. Download the PDF from the publisher and upload it.");
+          // Still useful as a reference: it can be cited, just not searched.
+          await finishReferenceOnly(paperId);
+          return;
         }
         pages = [{ pageNumber: 1, text: abstract, method: "web" }];
         await patch({ metadataOnly: true });

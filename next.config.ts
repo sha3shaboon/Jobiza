@@ -3,9 +3,22 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   // Native/ML packages load at runtime instead of being bundled.
-  serverExternalPackages: ["@huggingface/transformers", "onnxruntime-node", "sharp", "unpdf", "pdfjs-dist"],
+  serverExternalPackages: [
+    "@huggingface/transformers",
+    "onnxruntime-node",
+    "sharp",
+    "unpdf",
+    "pdfjs-dist",
+    "pdfmake",
+    "@citation-js/core",
+    "@citation-js/plugin-csl",
+    "@citation-js/plugin-bibtex",
+    "@citation-js/plugin-ris",
+  ],
   // transformers.js loads its native ONNX runtime dynamically, so tracing misses it.
   outputFileTracingIncludes: {
+    // Citation styles are read from disk; PDF export reads pdfmake's bundled fonts.
+    "/api/v1/**": ["./src/lib/writing/csl/*", "./node_modules/pdfmake/build/fonts/Roboto/*"],
     "/api/v1/conversations/\\[id\\]/messages": [
       "./node_modules/onnxruntime-node/package.json",
       "./node_modules/onnxruntime-node/dist/**/*",

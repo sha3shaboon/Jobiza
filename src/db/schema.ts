@@ -143,7 +143,7 @@ export const workspaceMember = pgTable(
 
 /* ───────────── Library ───────────── */
 
-export const paperSource = pgEnum("paper_source", ["upload", "doi", "url"]);
+export const paperSource = pgEnum("paper_source", ["upload", "doi", "url", "reference"]);
 export const paperStatus = pgEnum("paper_status", ["queued", "processing", "ready", "failed"]);
 
 export type PaperAuthor = { name: string };
@@ -384,6 +384,39 @@ export const reviewEvent = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("review_event_review_idx").on(t.reviewId, t.createdAt)],
+);
+
+/* ───────────── Writing ───────────── */
+
+/** Result of checking one sentence against its sources. */
+export type ClaimCheck = {
+  id: string;
+  sentence: string;
+  verdict: "supported" | "partly_supported" | "not_supported" | "needs_citation" | "cannot_verify";
+  explanation: string;
+  evidence?: { paperId: string; paperTitle: string; page: number; quote: string };
+  suggestion?: { paperId: string; paperTitle: string; page: number; quote: string };
+};
+
+export const document = pgTable(
+  "document",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    title: text("title").notNull().default("Untitled document"),
+    /** TipTap/ProseMirror JSON. Citation nodes reference paper ids. */
+    content: jsonb("content").$type<Record<string, unknown>>().notNull().default({ type: "doc", content: [{ type: "paragraph" }] }),
+    citationStyle: text("citation_style").notNull().default("apa"),
+    checks: jsonb("checks").$type<ClaimCheck[]>(),
+    checkedAt: timestamp("checked_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [index("document_user_idx").on(t.userId, t.updatedAt)],
 );
 
 /* ───────────── Relations ───────────── */

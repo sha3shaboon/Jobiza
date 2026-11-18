@@ -270,3 +270,83 @@ select.input {
   color: transparent;
   border-radius: 2px;
 }
+
+/* ───────────── Writing editor ───────────── */
+.doc-editor .ProseMirror {
+  outline: none;
+  min-height: 60vh;
+  font-size: 18px;
+  line-height: 1.75;
+}
+.doc-editor .ProseMirror > * + * {
+  margin-top: 0.9em;
+}
+.doc-editor .ProseMirror h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 1.6em;
+}
+.doc-editor .ProseMirror h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 1.4em;
+}
+.doc-editor .ProseMirror ul {
+  list-style: disc;
+  padding-left: 1.4em;
+}
+.doc-editor .ProseMirror ol {
+  list-style: decimal;
+  padding-left: 1.4em;
+}
+.doc-editor .ProseMirror blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 1em;
+  color: var(--muted);
+}
+.doc-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--muted);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+.citation-chip {
+  display: inline;
+  margin: 0 0.05em;
+  padding: 0.05em 0.35em;
+  box-decoration-break: clone;
+  border-radius: 6px;
+  background: var(--highlight);
+  color: var(--text);
+  font-size: 0.92em;
+  line-height: 1.4;
+  cursor: pointer;
+  white-space: nowrap;
+}
+/* Outranks TipTap's own rule that resets white-space on non-editable nodes. */
+.doc-editor .ProseMirror .citation-chip {
+  white-space: nowrap;
+}
+.citation-chip:hover,
+.citation-chip:focus-visible,
+.citation-chip.is-selected {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--cite);
+}
+.doc-bibliography .csl-entry {
+  padding-left: 1.5em;
+  text-indent: -1.5em;
+  margin-bottom: 0.6em;
+}
+.doc-bibliography .csl-left-margin {
+  display: inline;
+  margin-right: 0.4em;
+}
+.doc-bibliography .csl-right-inline {
+  display: inline;
+}
+.claim-flash {
+  background: var(--highlight);
+}
