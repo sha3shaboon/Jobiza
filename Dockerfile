@@ -16,7 +16,7 @@ RUN npm run build
 # ── web: minimal standalone Next.js server ──────────────────────────
 FROM base AS web
 ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0
-RUN useradd --system --uid 1001 jobiza
+RUN useradd --system --uid 1001 jobiza && mkdir -p /app/data && chown jobiza /app/data
 COPY --from=build --chown=jobiza /app/.next/standalone ./
 COPY --from=build --chown=jobiza /app/.next/static ./.next/static
 COPY --from=build --chown=jobiza /app/public ./public
@@ -28,7 +28,7 @@ CMD ["node", "server.js"]
 FROM deps AS tools
 ENV NODE_ENV=production
 COPY . .
-RUN useradd --system --uid 1001 jobiza && chown -R jobiza /app
+RUN useradd --system --uid 1001 jobiza && mkdir -p /app/data && chown -R jobiza /app
 USER jobiza
 CMD ["npm", "run", "db:migrate"]
 

@@ -85,18 +85,20 @@
   color: var(--field-text);
 }
 
-/* Speckled print grain over brand surfaces, matching the illustrations */
-.grain {
-  position: relative;
-  isolation: isolate;
-}
-.grain::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='1' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0 0.88 0 0 0 -4.2 1.55'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+@layer components {
+  /* Speckled print grain over brand surfaces, matching the illustrations */
+  /* Positioning comes from utilities on each element (relative, sticky…). */
+  .grain {
+    isolation: isolate;
+  }
+  .grain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='1' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0 0.88 0 0 0 -4.2 1.55'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  }
 }
 
 @theme inline {
@@ -260,4 +262,11 @@ select.input {
     animation-delay: 0ms !important;
     transition-duration: 1ms !important;
   }
+}
+
+/* Cited passage inside the PDF text layer (the layer itself is transparent text) */
+.textLayer mark.pdf-cited {
+  background: rgba(243, 182, 206, 0.55);
+  color: transparent;
+  border-radius: 2px;
 }

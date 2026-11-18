@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { libraryCounts } from "@/server/library";
 import { requireSession } from "@/server/session";
 import { getSettings } from "@/server/settings";
 
@@ -7,7 +8,7 @@ export const metadata: Metadata = { title: "Home" };
 
 export default async function Dashboard() {
   const { user } = await requireSession();
-  const settings = await getSettings(user.id);
+  const [settings, library] = await Promise.all([getSettings(user.id), libraryCounts(user.id)]);
   const steps = [
     { done: true, title: "Create your account", detail: "Done.", href: null },
     {
@@ -23,10 +24,10 @@ export default async function Dashboard() {
       href: "/app/settings",
     },
     {
-      done: false,
+      done: library.total > 0,
       title: "Add your first paper",
-      detail: "Uploading PDFs and importing by DOI is coming soon.",
-      href: null,
+      detail: "Upload a PDF, or import one by DOI or link.",
+      href: "/app/library",
     },
   ];
   const next = steps.find((s) => !s.done && s.href);
@@ -35,7 +36,9 @@ export default async function Dashboard() {
     <div className="mx-auto grid max-w-5xl gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,38rem)_1fr]">
       <div>
         <h1 className="text-3xl font-semibold tracking-[-0.02em]">Hello, {user.name.split(" ")[0]}</h1>
-        <p className="mt-2 text-lg text-muted">Four steps and your library is ready to grow.</p>
+        <p className="mt-2 text-lg text-muted">
+          {steps.every((s) => s.done) ? "You're all set. Ask your library anything." : "Four steps and your library is ready to grow."}
+        </p>
 
         <ol className="mt-10 grid">
           {steps.map((s, i) => (
@@ -71,10 +74,28 @@ export default async function Dashboard() {
       <aside aria-label="Your library" className="lg:border-l lg:border-border lg:pt-20 lg:pl-10">
         {/* eslint-disable-next-line @next/next/no-img-element -- static SVG illustration with filters */}
         <img src="/illustrations/sprout-pot.svg" alt="" width={220} height={280} className="h-auto w-40" />
-        <h2 className="mt-4 text-lg font-medium">Your library is empty</h2>
-        <p className="mt-1 max-w-xs text-muted">
-          Papers you add will show up here, ready to answer questions with the page they came from.
-        </p>
+        {library.total === 0 ? (
+          <>
+            <h2 className="mt-4 text-lg font-medium">Your library is empty</h2>
+            <p className="mt-1 max-w-xs text-muted">
+              Papers you add will show up here, ready to answer questions with the page they came from.
+            </p>
+          </>
+        ) : (
+          <>
+            <h2 className="mt-4 text-lg font-medium">
+              {library.total} {library.total === 1 ? "paper" : "papers"} in your library
+            </h2>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link href="/app/ask" className="btn-primary">
+                Ask a question
+              </Link>
+              <Link href="/app/library" className="btn-secondary">
+                Open library
+              </Link>
+            </div>
+          </>
+        )}
       </aside>
     </div>
   );

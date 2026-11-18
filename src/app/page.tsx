@@ -24,7 +24,7 @@ const sampleNotes = [
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col">
-      <div className="on-field grain">
+      <div className="on-field grain relative">
         <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5 sm:px-8">
           <Logo className="text-[28px]" />
           <nav aria-label="Account" className="flex items-center gap-1 sm:gap-3">
@@ -117,7 +117,7 @@ export default function Home() {
         </section>
       </main>
 
-      <section id="name" aria-labelledby="name-title" className="on-field grain">
+      <section id="name" aria-labelledby="name-title" className="on-field grain relative">
         <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 py-20 sm:px-8 md:grid-cols-[1fr_1.4fr]">
           <div>
             <p lang="ar" dir="rtl" className="font-naskh text-7xl leading-tight text-blossom md:text-left">

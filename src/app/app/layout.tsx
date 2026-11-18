@@ -8,7 +8,7 @@ async function SessionGate({ children }: { children: React.ReactNode }) {
   const { user } = await requireSession();
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
-      <aside className="on-field grain flex shrink-0 flex-col md:sticky md:top-0 md:h-screen md:w-64">
+      <aside className="on-field grain relative flex shrink-0 flex-col md:sticky md:top-0 md:h-screen md:w-64">
         <div className="flex items-center justify-between px-4 py-4 md:px-5 md:py-6">
           <Logo href="/app" className="text-[25px]" />
           <div className="md:hidden">

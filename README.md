@@ -12,8 +12,8 @@ See [`docs/SPEC.md`](docs/SPEC.md) for the product decisions and the phased buil
 | Phase | Scope | State |
 |---|---|---|
 | 1. Foundation | Docker stack, DB schema, auth (magic link, password, Google, ORCID), encrypted BYOK, model picker, worker | ✅ done |
-| 2. Library + chat | PDF/DOI ingest, OCR, local embeddings, hybrid search, cited chat | next |
-| 3. Literature review | Source connectors, agentic + screening modes, PRISMA log, matrix | planned |
+| 2. Library + chat | PDF/DOI/URL ingest, OCR, local embeddings, hybrid search, cited chat, PDF viewer | ✅ done |
+| 3. Literature review | Source connectors, agentic + screening modes, PRISMA log, matrix | next |
 | 4. Writing editor | CSL citations, Zotero/BibTeX, claim checker, DOCX/PDF/LaTeX export | planned |
 | 5. Polish | API docs for desktop/mobile clients, deploy guide | planned |
 
@@ -43,6 +43,19 @@ npm run worker:dev           # background worker, in a second terminal
 ```
 
 With `SMTP_URL` empty, emails are printed to the web server console.
+
+## How the library and chat work
+
+1. **Add a source** (Library page or `POST /api/v1/papers`): upload a PDF, or import a DOI or link.
+   - DOIs: metadata from OpenAlex and Crossref; the open-access PDF (Unpaywall data via OpenAlex) is fetched when there is one, otherwise the abstract is indexed.
+   - Links: PDFs are downloaded; web pages are turned into readable text, and scholarly pages that link a `citation_pdf_url` get the real PDF.
+   - Every server-side fetch goes through an SSRF guard (public addresses only, checked on each redirect, 50 MB and 30 s limits).
+2. **The worker processes it**: text is extracted page by page; scanned pages are read by Claude with the owner's key (up to 60 pages per paper); the DOI (or arXiv id) on the first pages fills in title, authors and year.
+3. **Indexing**: each page is split into overlapping passages that never cross a page, embedded locally with `bge-small-en-v1.5` (no API cost), and stored with a full-text index.
+4. **Asking**: hybrid search (pgvector similarity + Postgres full-text, merged with reciprocal rank fusion) picks passages from the whole library or the papers you choose. They are sent to Claude as `search_result` blocks, one sentence per block, so Claude cites exact sentences. Each citation is stored with paper, page and quote.
+5. **Checking**: citations in the margin open the PDF at the cited page with the passage highlighted.
+
+The embedding model (about 35 MB) downloads on first use into `MODEL_CACHE_DIR`.
 
 ## Sign-in providers
 
@@ -74,6 +87,15 @@ Every endpoint accepts a session cookie or `Authorization: Bearer <token>`. The 
 | GET / PATCH | `/api/v1/settings` | Read or update `model` and `citationStyle` |
 | PUT / DELETE | `/api/v1/settings/api-key` | Verify and save, or remove, the Anthropic key |
 | GET | `/api/v1/models` | Claude models available to the user's key |
+| GET / POST | `/api/v1/papers` | List papers; upload a PDF (multipart, field `file`) |
+| POST | `/api/v1/papers/import` | Import `{ "input": "<DOI or link>" }` |
+| GET / DELETE | `/api/v1/papers/:id` | Paper details; delete |
+| POST | `/api/v1/papers/:id/retry` | Re-run processing |
+| GET | `/api/v1/papers/:id/file` | The PDF |
+| GET | `/api/v1/papers/:id/pages/:n` | Extracted text of a page or section |
+| GET / POST | `/api/v1/conversations` | List; start one (`scopePaperIds` optional) |
+| GET / PATCH / DELETE | `/api/v1/conversations/:id` | Messages with citations; change scope; delete |
+| POST | `/api/v1/conversations/:id/messages` | Ask `{ "question": "…" }`; streams Server-Sent Events: `sources`, `text`, then `done` or `error` |
 
 ## Project layout
 

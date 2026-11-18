@@ -1,16 +1,21 @@
 /**
  * Background worker: long-running jobs live here, outside the web process
  * (PDF ingestion, embeddings and literature-review agents in later phases).
- * Phase 1 ships the queue plumbing and a health-check job.
+ * Jobs: paper ingestion (PDF text, OCR of scanned pages, chunking, embeddings).
  */
 import { Queue, Worker, type Job } from "bullmq";
 import IORedis from "ioredis";
-import { QUEUE_NAME, type JobName } from "../src/server/queue-names";
+import { ingestPaper } from "../src/server/ingest";
+import { QUEUE_NAME, type IngestJob, type JobName } from "../src/server/queue-names";
 
 const connection = new IORedis(process.env.REDIS_URL ?? "redis://localhost:6379", { maxRetriesPerRequest: null });
 
 const handlers: Record<JobName, (job: Job) => Promise<unknown>> = {
   ping: async (job) => ({ pong: true, receivedAt: new Date().toISOString(), data: job.data }),
+  "ingest-paper": async (job) => {
+    await ingestPaper((job.data as IngestJob).paperId);
+    return { paperId: (job.data as IngestJob).paperId };
+  },
 };
 
 const worker = new Worker(
@@ -20,7 +25,7 @@ const worker = new Worker(
     if (!handler) throw new Error(`No handler for job "${job.name}"`);
     return handler(job);
   },
-  { connection, concurrency: Number(process.env.WORKER_CONCURRENCY ?? 4) },
+  { connection, concurrency: Number(process.env.WORKER_CONCURRENCY ?? 2), lockDuration: 10 * 60_000 },
 );
 
 worker.on("ready", async () => {

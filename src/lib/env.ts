@@ -20,6 +20,12 @@ const schema = z.object({
   /** Use https://sandbox.orcid.org for development credentials. */
   ORCID_BASE_URL: z.string().url().default("https://orcid.org"),
   SMTP_URL: z.string().optional(),
+  /** Where uploaded and imported PDFs are stored. */
+  UPLOAD_DIR: z.string().default("./data/uploads"),
+  /** Where the local embedding model is cached after first download. */
+  MODEL_CACHE_DIR: z.string().default("./data/models"),
+  /** Optional contact email sent to OpenAlex/Crossref for their "polite pool". */
+  CONTACT_EMAIL: z.preprocess((v) => (v === "" ? undefined : v), z.string().email().optional()),
   EMAIL_FROM: z.string().default("Jobiza <no-reply@localhost>"),
 });
 

@@ -1,14 +1,23 @@
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
+  customType,
   index,
+  integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
   text,
   timestamp,
   uniqueIndex,
+  vector,
 } from "drizzle-orm/pg-core";
+
+const tsvector = customType<{ data: string }>({ dataType: () => "tsvector" });
+
+/** Embedding size of the local model (bge-small-en-v1.5). */
+export const EMBEDDING_DIMENSIONS = 384;
 
 const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -132,6 +141,142 @@ export const workspaceMember = pgTable(
   (t) => [primaryKey({ columns: [t.workspaceId, t.userId] })],
 );
 
+/* ───────────── Library ───────────── */
+
+export const paperSource = pgEnum("paper_source", ["upload", "doi", "url"]);
+export const paperStatus = pgEnum("paper_status", ["queued", "processing", "ready", "failed"]);
+
+export type PaperAuthor = { name: string };
+
+/** A source in a workspace's library: an uploaded PDF, a DOI import or a web article. */
+export const paper = pgTable(
+  "paper",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    addedBy: text("added_by").references(() => user.id, { onDelete: "set null" }),
+    source: paperSource("source").notNull(),
+    status: paperStatus("status").notNull().default("queued"),
+    statusDetail: text("status_detail"),
+    title: text("title").notNull(),
+    authors: jsonb("authors").$type<PaperAuthor[]>().notNull().default([]),
+    year: integer("year"),
+    venue: text("venue"),
+    doi: text("doi"),
+    url: text("url"),
+    abstract: text("abstract"),
+    /** Storage key of the original PDF, when there is one. */
+    fileKey: text("file_key"),
+    fileName: text("file_name"),
+    pageCount: integer("page_count"),
+    /** True when there was no full text, only metadata and abstract. */
+    metadataOnly: boolean("metadata_only").notNull().default(false),
+    ...timestamps,
+  },
+  (t) => [
+    index("paper_workspace_idx").on(t.workspaceId, t.createdAt),
+    uniqueIndex("paper_workspace_doi_idx").on(t.workspaceId, t.doi).where(sql`doi is not null`),
+  ],
+);
+
+/** Extracted text of each page (page 1 is the first page). */
+export const paperPage = pgTable(
+  "paper_page",
+  {
+    paperId: text("paper_id")
+      .notNull()
+      .references(() => paper.id, { onDelete: "cascade" }),
+    pageNumber: integer("page_number").notNull(),
+    text: text("text").notNull(),
+    /** "text" from the PDF text layer, "ocr" when Claude read a scanned page, "web" for articles. */
+    method: text("method").notNull().default("text"),
+  },
+  (t) => [primaryKey({ columns: [t.paperId, t.pageNumber] })],
+);
+
+/** Retrieval unit: a passage within one page, with its embedding and full-text vector. */
+export const chunk = pgTable(
+  "chunk",
+  {
+    id: text("id").primaryKey(),
+    paperId: text("paper_id")
+      .notNull()
+      .references(() => paper.id, { onDelete: "cascade" }),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    pageNumber: integer("page_number").notNull(),
+    chunkIndex: integer("chunk_index").notNull(),
+    text: text("text").notNull(),
+    embedding: vector("embedding", { dimensions: EMBEDDING_DIMENSIONS }).notNull(),
+    tsv: tsvector("tsv")
+      .notNull()
+      .generatedAlwaysAs(sql`to_tsvector('english', text)`),
+  },
+  (t) => [
+    index("chunk_paper_idx").on(t.paperId, t.chunkIndex),
+    index("chunk_workspace_idx").on(t.workspaceId),
+    index("chunk_embedding_idx").using("hnsw", t.embedding.op("vector_cosine_ops")),
+    index("chunk_tsv_idx").using("gin", t.tsv),
+  ],
+);
+
+/* ───────────── Chat ───────────── */
+
+export const conversation = pgTable(
+  "conversation",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    title: text("title").notNull().default("New question"),
+    /** Paper ids the conversation is limited to; empty means the whole library. */
+    scopePaperIds: jsonb("scope_paper_ids").$type<string[]>().notNull().default([]),
+    ...timestamps,
+  },
+  (t) => [index("conversation_user_idx").on(t.userId, t.updatedAt)],
+);
+
+/** A citation attached to a span of an assistant answer. */
+export type MessageCitation = {
+  /** Character range in the message text that this citation supports. */
+  start: number;
+  end: number;
+  paperId: string;
+  paperTitle: string;
+  pageNumber: number;
+  /** "page" for PDFs, "section" for web articles. */
+  locator?: "page" | "section";
+  chunkId: string;
+  citedText: string;
+};
+
+export const messageRole = pgEnum("message_role", ["user", "assistant"]);
+
+export const message = pgTable(
+  "message",
+  {
+    id: text("id").primaryKey(),
+    conversationId: text("conversation_id")
+      .notNull()
+      .references(() => conversation.id, { onDelete: "cascade" }),
+    role: messageRole("role").notNull(),
+    content: text("content").notNull(),
+    citations: jsonb("citations").$type<MessageCitation[]>().notNull().default([]),
+    model: text("model"),
+    /** Set when generation failed or was cut short, so the UI can say so. */
+    error: text("error"),
+    ...timestamps,
+  },
+  (t) => [index("message_conversation_idx").on(t.conversationId, t.createdAt)],
+);
+
 /* ───────────── Relations ───────────── */
 
 export const userRelations = relations(user, ({ one, many }) => ({
@@ -141,6 +286,29 @@ export const userRelations = relations(user, ({ one, many }) => ({
 
 export const workspaceRelations = relations(workspace, ({ many }) => ({
   members: many(workspaceMember),
+  papers: many(paper),
+}));
+
+export const paperRelations = relations(paper, ({ one, many }) => ({
+  workspace: one(workspace, { fields: [paper.workspaceId], references: [workspace.id] }),
+  pages: many(paperPage),
+  chunks: many(chunk),
+}));
+
+export const paperPageRelations = relations(paperPage, ({ one }) => ({
+  paper: one(paper, { fields: [paperPage.paperId], references: [paper.id] }),
+}));
+
+export const chunkRelations = relations(chunk, ({ one }) => ({
+  paper: one(paper, { fields: [chunk.paperId], references: [paper.id] }),
+}));
+
+export const conversationRelations = relations(conversation, ({ many }) => ({
+  messages: many(message),
+}));
+
+export const messageRelations = relations(message, ({ one }) => ({
+  conversation: one(conversation, { fields: [message.conversationId], references: [conversation.id] }),
 }));
 
 export const workspaceMemberRelations = relations(workspaceMember, ({ one }) => ({
