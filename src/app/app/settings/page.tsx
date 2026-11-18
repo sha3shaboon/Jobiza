@@ -10,9 +10,9 @@ export default async function SettingsPage() {
   const { user } = await requireSession();
   const settings = await getSettings(user.id);
   return (
-    <div className="mx-auto max-w-3xl">
-      <h1 className="font-serif text-3xl font-semibold">Settings</h1>
-      <p className="mt-2 text-muted">Your Anthropic key pays for the AI features. Jobiza never shares it.</p>
+    <div className="mx-auto max-w-5xl">
+      <h1 className="text-3xl font-semibold tracking-[-0.02em]">Settings</h1>
+      <p className="mt-2 text-lg text-muted">Your Anthropic key pays for the AI features. Jobiza never shares it.</p>
       <SettingsPanel initial={settings} citationStyles={[...CITATION_STYLES]} />
     </div>
   );

@@ -63,7 +63,7 @@ export function SettingsPanel({
   }, [settings.hasApiKey]);
 
   return (
-    <div className="mt-8 grid gap-6">
+    <div className="mt-10">
       <ApiKeyCard
         settings={settings}
         onSaved={(s, m) => {
@@ -126,27 +126,30 @@ function ApiKeyCard({
   }
 
   return (
-    <section className="card">
-      <div className="mb-1 flex items-center justify-between gap-3">
-        <h2 className="font-semibold">Anthropic API key</h2>
-        {settings.hasApiKey && (
-          <span className="rounded-full bg-success/10 px-2 py-0.5 text-xs text-success">Connected</span>
-        )}
-      </div>
-      <p className="mb-4 text-sm text-muted">
-        Create a key in the{" "}
-        <a href="https://platform.claude.com/settings/keys" target="_blank" rel="noreferrer" className="text-accent underline">
-          Claude Console
-        </a>
-        . We check it with Anthropic (this costs nothing), then store it encrypted.
-      </p>
-
+    <SettingRow
+      id="api-key-title"
+      title="Anthropic API key"
+      status={
+        settings.hasApiKey ? (
+          <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent">Connected</span>
+        ) : null
+      }
+      description={
+        <>
+          Create one in the{" "}
+          <a href="https://platform.claude.com/settings/keys" target="_blank" rel="noreferrer" className="link text-text">
+            Claude Console
+          </a>
+          . Checking it with Anthropic costs nothing, and it&apos;s stored encrypted.
+        </>
+      }
+    >
       {settings.hasApiKey && !editing ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-surface-2 px-4 py-3">
-          <div className="text-sm">
-            <span className="font-mono">sk-ant-…{settings.apiKeyLast4}</span>
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[10px] bg-surface-2 px-4 py-3">
+          <div>
+            <span translate="no" className="tabular-nums">sk-ant-…{settings.apiKeyLast4}</span>
             {settings.apiKeyVerifiedAt && (
-              <span className="ml-2 text-muted">verified {new Date(settings.apiKeyVerifiedAt).toLocaleDateString()}</span>
+              <span className="ml-2 text-sm text-muted">Verified {dateFormat.format(new Date(settings.apiKeyVerifiedAt))}</span>
             )}
           </div>
           <div className="flex gap-2">
@@ -159,8 +162,9 @@ function ApiKeyCard({
           <label className="label sr-only" htmlFor="api-key">API key</label>
           <input
             id="api-key"
+            name="anthropic-api-key"
             type="password"
-            className="input font-mono"
+            className="input"
             placeholder="sk-ant-api03-…"
             value={key}
             onChange={(e) => setKey(e.target.value)}
@@ -168,16 +172,16 @@ function ApiKeyCard({
             spellCheck={false}
             required
           />
-          {error && <p className="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger" role="alert">{error}</p>}
+          {error && <p className="rounded-[10px] bg-danger-soft px-3.5 py-2.5 text-sm text-danger" role="alert">{error}</p>}
           <div className="flex gap-2">
-            <button className="btn-primary" disabled={busy || !key}>{busy ? "Checking key…" : "Save and verify"}</button>
+            <button className="btn-primary" disabled={busy || !key}>{busy ? "Checking key…" : "Save and verify key"}</button>
             {settings.hasApiKey && (
               <button type="button" className="btn-ghost" onClick={() => setEditing(false)}>Cancel</button>
             )}
           </div>
         </form>
       )}
-    </section>
+    </SettingRow>
   );
 }
 
@@ -210,18 +214,21 @@ function ModelCard({
   }
 
   return (
-    <section className="card">
-      <h2 className="mb-1 font-semibold">Claude model</h2>
-      <p className="mb-4 text-sm text-muted">
-        Used for every AI feature: chat, literature reviews and writing. More capable models cost more per request.
-      </p>
+    <SettingRow
+      id="model-title"
+      title="Claude model"
+      description="Answers questions, runs literature reviews and checks your writing. More capable models cost more per request."
+    >
       {!settings.hasApiKey ? (
-        <p className="text-sm text-muted">Add your API key first to see the models it can use.</p>
+        <p className="text-muted">Add your API key first to see the models it can use.</p>
       ) : models === null ? (
-        <div className="h-10 animate-pulse rounded-md bg-surface-2" />
+        <div className="h-11 animate-pulse rounded-[10px] bg-surface-2" aria-label="Loading models…" />
       ) : error ? (
-        <div className="flex items-center gap-3 text-sm text-danger">
-          {error} <button className="btn-secondary" onClick={onRetry}>Retry</button>
+        <div className="flex flex-wrap items-center gap-3 text-sm text-danger" role="alert">
+          {error}
+          <button className="btn-secondary" onClick={onRetry}>
+            Try again
+          </button>
         </div>
       ) : (
         <>
@@ -240,10 +247,14 @@ function ModelCard({
               </option>
             ))}
           </select>
-          {saveError && <p className="mt-2 text-sm text-danger">{saveError}</p>}
+          {saveError && (
+            <p className="mt-2 text-sm text-danger" role="alert">
+              {saveError}
+            </p>
+          )}
         </>
       )}
-    </section>
+    </SettingRow>
   );
 }
 
@@ -258,9 +269,11 @@ function CitationCard({
 }) {
   const [busy, setBusy] = useState(false);
   return (
-    <section className="card">
-      <h2 className="mb-1 font-semibold">Default citation style</h2>
-      <p className="mb-4 text-sm text-muted">Applied to new documents. You can change it per document.</p>
+    <SettingRow
+      id="style-title"
+      title="Default citation style"
+      description="Used for new documents. You can change it in each document."
+    >
       <label className="label sr-only" htmlFor="style">Citation style</label>
       <select
         id="style"
@@ -285,6 +298,38 @@ function CitationCard({
           <option key={s.id} value={s.id}>{s.label}</option>
         ))}
       </select>
+    </SettingRow>
+  );
+}
+
+/** One setting: explanation in the margin column, controls beside it. */
+function SettingRow({
+  id,
+  title,
+  status,
+  description,
+  children,
+}: {
+  id: string;
+  title: string;
+  status?: React.ReactNode;
+  description: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section aria-labelledby={id} className="grid gap-4 border-t border-border py-8 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-10">
+      <div>
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 id={id} className="text-lg font-medium">
+            {title}
+          </h2>
+          {status}
+        </div>
+        <div className="mt-1.5 text-sm leading-relaxed text-muted">{description}</div>
+      </div>
+      <div className="min-w-0 lg:pt-1">{children}</div>
     </section>
   );
 }
+
+const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });

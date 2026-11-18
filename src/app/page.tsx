@@ -1,105 +1,153 @@
 import Link from "next/link";
-import { Blossom, Logo } from "@/components/logo";
+import { Logo } from "@/components/logo";
 
-const stages = [
+const capabilities = [
   {
-    verb: "Plant",
-    title: "Chat with your library",
-    body: "Drop in PDFs or import by DOI. Ask questions and get answers where every sentence links back to the exact page it came from.",
+    title: "Ask your library",
+    body: "Upload PDFs or import by DOI, then ask questions in plain language. Answers come only from your papers and link to the page they used.",
   },
   {
-    verb: "Spread",
     title: "Grow a literature review",
-    body: "Let it reach across Semantic Scholar, OpenAlex, arXiv and PubMed. It can research on its own, or you can screen every paper yourself with a PRISMA log.",
+    body: "Search Semantic Scholar, OpenAlex, arXiv and PubMed. Let Jobiza research on its own, or screen each paper yourself and keep a PRISMA log.",
   },
   {
-    verb: "Harvest",
     title: "Write with citations",
-    body: "Draft in an editor that knows your sources. Cite in any style, export to Word, PDF or LaTeX, and check every claim before you submit.",
+    body: "Draft in an editor that knows your sources. Cite in APA, MLA, Chicago and more, export to Word, PDF or LaTeX, and check each claim before you submit.",
   },
+];
+
+const sampleNotes = [
+  { n: 1, author: "Rahman et al. (2024)", quote: "recall fell by 19% after restriction", where: "Journal of Adolescent Health, p. 7" },
+  { n: 2, author: "Okafor and Lind (2023)", quote: "emotional items showed the steepest decline", where: "Sleep Medicine, p. 112" },
 ];
 
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col">
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
-        <Logo className="text-[30px]" />
-        <nav className="flex items-center gap-2">
-          <Link href="/sign-in" className="btn-ghost">Sign in</Link>
-          <Link href="/sign-up" className="btn-primary">Get started</Link>
-        </nav>
-      </header>
+      <div className="on-field grain">
+        <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5 sm:px-8">
+          <Logo className="text-[28px]" />
+          <nav aria-label="Account" className="flex items-center gap-1 sm:gap-3">
+            <Link href="/sign-in" className="btn-ghost px-3 whitespace-nowrap text-[var(--field-text)] hover:bg-field-2 hover:text-[var(--field-text)]">
+              Sign in
+            </Link>
+            <Link href="/sign-up" className="btn-blossom hidden px-4 whitespace-nowrap sm:inline-flex">
+              Start your library
+            </Link>
+          </nav>
+        </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-6">
-        <section className="relative py-16 sm:py-24">
-          <Blossom
-            size={340}
-            className="pointer-events-none absolute top-0 right-[-60px] hidden opacity-[0.12] md:block lg:right-0 dark:md:hidden"
-          />
-          <p className="mb-4 text-sm font-medium uppercase tracking-wider text-stem">
-            A research assistant powered by Claude
-          </p>
-          <h1 className="relative max-w-3xl font-serif text-4xl leading-tight font-semibold sm:text-6xl">
-            Plant your sources.
-            <br />
-            <span className="text-accent">Watch your research grow.</span>
+        <section className="mx-auto flex w-full max-w-6xl flex-col items-center px-4 pt-12 text-center sm:px-8 md:pt-16">
+          <h1 className="max-w-[23ch] text-[2.5rem] leading-[1.05] font-semibold tracking-[-0.025em] sm:text-5xl md:text-[3.75rem]">
+            Ask your papers anything. Every answer cites the page.
           </h1>
-          <p className="relative mt-6 max-w-2xl text-lg text-muted">
-            Add your papers and your library grows its own connections, summaries and citations, so every claim you
-            write stays rooted in a source you can check. Bring your own Anthropic API key and pay only for what you
-            use.
+          <p className="mt-6 max-w-[34rem] text-lg leading-relaxed text-[var(--field-muted)]">
+            Jobiza reads the papers you add and answers your questions from them, citing the exact page every time. Like
+            khubbayza after the rain, your library grows on its own.
           </p>
-          <div className="relative mt-8 flex flex-wrap gap-3">
-            <Link href="/sign-up" className="btn-primary px-6 py-3 text-base">Start your library</Link>
-            <Link href="/sign-in" className="btn-secondary px-6 py-3 text-base">Sign in with ORCID or Google</Link>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
+            <Link href="/sign-up" className="btn-blossom px-6">
+              Start your library
+            </Link>
+            <Link href="/sign-in" className="link decoration-blossom">
+              Sign in with ORCID or Google
+            </Link>
           </div>
+          {/* eslint-disable-next-line @next/next/no-img-element -- static SVG illustration with filters */}
+          <img
+            src="/illustrations/research-shelf.svg"
+            alt="A shelf of research tools with faces: books, a highlighter, a magnifying glass with an eye, a highlighted paper, and a potted khubbayza in bloom"
+            width={1000}
+            height={560}
+            fetchPriority="high"
+            className="mt-12 -mb-px block h-auto w-full max-w-[1000px]"
+          />
+        </section>
+      </div>
+
+      <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-8">
+        <section className="grid gap-x-12 gap-y-8 py-20 md:grid-cols-[minmax(0,40rem)_1fr]">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-[-0.015em] sm:text-3xl">See where every answer comes from</h2>
+            <p className="mt-3 max-w-[36rem] text-muted">
+              Claims are highlighted in the answer and traced to the margin: which paper, which page, and the exact words
+              it was based on.
+            </p>
+            <figure className="mt-8 border-t border-border pt-6">
+              <figcaption className="text-sm text-muted">Example from a sample library</figcaption>
+              <p className="mt-2 text-sm text-muted">You asked: does sleep loss affect memory in teenagers?</p>
+              <p className="mt-3 text-lg leading-[1.7]">
+                Yes. One night of restricted sleep <span className="cited">reduced next-day recall by about a fifth</span>
+                <sup className="ml-0.5 text-xs font-semibold text-cite">1</sup>, and{" "}
+                <span className="cited">emotional material was affected most</span>
+                <sup className="ml-0.5 text-xs font-semibold text-cite">2</sup>.
+              </p>
+            </figure>
+          </div>
+          <aside aria-label="Sources for the example answer" className="md:border-l md:border-border md:pt-24 md:pl-8">
+            <ol className="grid gap-6">
+              {sampleNotes.map((s) => (
+                <li key={s.n} className="flex gap-3 text-sm leading-relaxed">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-cite text-[11px] font-semibold text-white dark:text-[var(--bg)]">
+                    {s.n}
+                  </span>
+                  <span>
+                    <span className="font-medium">{s.author}</span>
+                    <span className="mt-1 block text-[15px] italic">&ldquo;{s.quote}&rdquo;</span>
+                    <span className="mt-1 block text-muted">{s.where}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </aside>
         </section>
 
-        <section className="grid gap-4 pb-20 md:grid-cols-3">
-          {stages.map((s, i) => (
-            <div key={s.verb} className="card">
-              <div className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-stem">
-                <span className="font-mono text-muted">0{i + 1}</span> {s.verb}
+        <section aria-labelledby="what" className="border-t border-border py-20">
+          <h2 id="what" className="text-2xl font-semibold tracking-[-0.015em] sm:text-3xl">
+            From first paper to finished draft
+          </h2>
+          <dl className="mt-10 grid gap-x-12 gap-y-10 md:grid-cols-3">
+            {capabilities.map((c) => (
+              <div key={c.title} className="border-t-2 border-accent pt-4">
+                <dt className="text-lg font-semibold">{c.title}</dt>
+                <dd className="mt-2 leading-relaxed text-muted">{c.body}</dd>
               </div>
-              <h2 className="mb-2 font-serif text-xl font-semibold">{s.title}</h2>
-              <p className="text-sm leading-relaxed text-muted">{s.body}</p>
-            </div>
-          ))}
-        </section>
-
-        <section id="name" className="mb-24 grid items-center gap-10 rounded-2xl bg-accent-soft px-6 py-12 sm:px-12 md:grid-cols-[1fr_1.4fr]">
-          <div className="text-center md:text-left">
-            <Blossom size={56} className="mx-auto mb-4 md:mx-0" />
-            <p lang="ar" dir="rtl" className="font-arabic text-6xl leading-tight text-accent sm:text-7xl md:text-left">
-              خُبَّيْزَة
-            </p>
-            <p className="mt-3 text-sm text-muted">
-              <em>khubbayza</em> · <em>Malva parviflora</em> · cheeseweed
-            </p>
-          </div>
-          <div className="grid gap-4 leading-relaxed">
-            <h2 className="font-serif text-2xl font-semibold sm:text-3xl">About the name</h2>
-            <p>
-              Nobody plants <em>khubbayza</em>. After the winter rains it comes up on its own: in fields, along
-              roadsides, through cracks in the pavement. Families across the Levant and Egypt have foraged and cooked it
-              for generations. It&apos;s humble, resilient and quietly nourishing.
-            </p>
-            <p>
-              That&apos;s what we want Jobiza to be: something that grows out of whatever sources you give it, thrives
-              on a student budget, and feeds the work you&apos;re actually trying to do.
-            </p>
-            <p className="text-sm text-muted">
-              The dot on our &ldquo;i&rdquo; is its blossom: five small notched petals, the flower every one of those
-              wild plants opens into. (The English name, cheeseweed, comes from its seed pods, which look like tiny
-              wheels of cheese.)
-            </p>
-          </div>
+            ))}
+          </dl>
         </section>
       </main>
 
-      <footer className="border-t border-border py-6 text-center text-xs text-muted">
-        <Logo href={null} className="text-sm" /> · grows wherever you plant it. Your papers
-        and API key stay in your account, and keys are encrypted at rest.
+      <section id="name" aria-labelledby="name-title" className="on-field grain">
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 py-20 sm:px-8 md:grid-cols-[1fr_1.4fr]">
+          <div>
+            <p lang="ar" dir="rtl" className="font-naskh text-7xl leading-tight text-blossom md:text-left">
+              خُبَّيْزَة
+            </p>
+            <p className="mt-3 text-sm text-[var(--field-muted)]">
+              <em>khubbayza</em>, <em>Malva parviflora</em>, or cheeseweed
+            </p>
+          </div>
+          <div className="grid max-w-[38rem] gap-4 leading-relaxed">
+            <h2 id="name-title" className="text-2xl font-semibold tracking-[-0.015em]">
+              About the name
+            </h2>
+            <p>
+              Nobody plants khubbayza. After the winter rains it comes up on its own: in fields, along roadsides, through
+              cracks in the pavement. Families across the Levant and Egypt have foraged and cooked it for generations.
+            </p>
+            <p>
+              That&apos;s what Jobiza is for: something that grows out of whatever sources you give it, fits a student
+              budget, and feeds the work you&apos;re actually doing. The dot on our &ldquo;i&rdquo; is its blossom.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <footer className="border-t border-border">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-sm text-muted sm:px-8">
+          <Logo href={null} className="text-base" />
+          <p>Your papers and API key stay in your account. Keys are encrypted at rest.</p>
+        </div>
       </footer>
     </div>
   );

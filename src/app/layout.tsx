@@ -1,23 +1,36 @@
-import type { Metadata } from "next";
-import { Fraunces, Geist, Geist_Mono, Noto_Naskh_Arabic, Source_Serif_4 } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Fraunces, Noto_Naskh_Arabic, Readex_Pro } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-const serif = Source_Serif_4({ variable: "--font-serif", subsets: ["latin"] });
+/* Readex Pro: one family for Latin and Arabic, used for all interface and reading text. */
+const readex = Readex_Pro({ variable: "--font-readex", subsets: ["latin", "arabic"], weight: "variable" });
+/* Fraunces and Noto Naskh appear only inside the logo lockup. */
 const display = Fraunces({ variable: "--font-display", subsets: ["latin"], axes: ["opsz"] });
-const arabic = Noto_Naskh_Arabic({ variable: "--font-arabic", subsets: ["arabic"], weight: ["500"] });
+const naskh = Noto_Naskh_Arabic({ variable: "--font-naskh", subsets: ["arabic"], weight: ["500"] });
 
 export const metadata: Metadata = {
-  title: { default: "Jobiza — plant your sources, watch your research grow", template: "%s · Jobiza" },
+  title: { default: "Jobiza: ask your papers, see the page", template: "%s | Jobiza" },
   description:
-    "A research library that grows on its own, like خُبَّيْزَة after the rain. Chat with your papers, grow literature reviews and write with every claim cited. Powered by Claude, with your own API key.",
+    "Ask questions of the papers you're reading and get answers that cite the exact page. Build literature reviews and write with every claim sourced. Powered by Claude, with your own API key.",
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#21402c" },
+    { media: "(prefers-color-scheme: dark)", color: "#16291d" },
+  ],
+  colorScheme: "light dark",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${serif.variable} ${arabic.variable} ${display.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col font-sans">{children}</body>
+    <html lang="en" className={`${readex.variable} ${display.variable} ${naskh.variable} h-full antialiased`}>
+      <body className="flex min-h-full flex-col font-sans">
+        <a href="#main" className="skip-link">
+          Skip to content
+        </a>
+        {children}
+      </body>
     </html>
   );
 }

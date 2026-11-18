@@ -56,8 +56,8 @@ export function AuthForm({ mode, providers }: { mode: Mode; providers: { google:
 
   if (sent) {
     return (
-      <div className="card text-center">
-        <h1 className="mb-2 font-serif text-2xl font-semibold">Check your email</h1>
+      <div className="text-center" aria-live="polite">
+        <h1 className="mb-2 text-3xl font-semibold tracking-[-0.02em]">Check your email</h1>
         <p className="text-sm text-muted">
           We sent a sign-in link to <strong className="text-text">{email}</strong>. It expires in 5 minutes.
         </p>
@@ -69,10 +69,10 @@ export function AuthForm({ mode, providers }: { mode: Mode; providers: { google:
   const hasSocial = providers.google || providers.orcid;
 
   return (
-    <div className="card">
-      <h1 className="mb-1 font-serif text-2xl font-semibold">{mode === "sign-in" ? "Welcome back" : "Create your account"}</h1>
-      <p className="mb-6 text-sm text-muted">
-        {mode === "sign-in" ? "Sign in to your research library." : "Plant the first seeds of your research library."}
+    <div>
+      <h1 className="mb-2 text-3xl font-semibold tracking-[-0.02em]">{mode === "sign-in" ? "Welcome back" : "Create your account"}</h1>
+      <p className="mb-8 text-muted">
+        {mode === "sign-in" ? "Sign in to your research library." : "Start a library of the papers you're reading."}
       </p>
 
       {hasSocial && (
@@ -80,7 +80,7 @@ export function AuthForm({ mode, providers }: { mode: Mode; providers: { google:
           <div className="grid gap-2">
             {providers.orcid && (
               <button type="button" className="btn-secondary" disabled={busy} onClick={() => social("orcid")}>
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#a6ce39] text-[10px] font-bold text-white">iD</span>
+                <span aria-hidden className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#a6ce39] text-[10px] font-bold text-white">iD</span>
                 Continue with ORCID
               </button>
             )}
@@ -102,7 +102,7 @@ export function AuthForm({ mode, providers }: { mode: Mode; providers: { google:
         </>
       )}
 
-      <div className="mb-4 grid grid-cols-2 rounded-md bg-surface-2 p-1 text-sm" role="tablist">
+      <div className="mb-5 grid grid-cols-2 rounded-[10px] bg-surface-2 p-1 text-sm" role="tablist" aria-label="Sign-in method">
         {(["magic", "password"] as const).map((m) => (
           <button
             key={m}
@@ -110,7 +110,7 @@ export function AuthForm({ mode, providers }: { mode: Mode; providers: { google:
             role="tab"
             aria-selected={method === m}
             onClick={() => setMethod(m)}
-            className={`rounded px-3 py-1.5 ${method === m ? "bg-surface font-medium shadow-sm" : "text-muted"}`}
+            className={`min-h-9 rounded-[8px] px-3 ${method === m ? "bg-surface font-medium text-text ring-1 ring-border" : "text-muted hover:text-text"}`}
           >
             {m === "magic" ? "Email link" : "Password"}
           </button>
@@ -121,18 +121,19 @@ export function AuthForm({ mode, providers }: { mode: Mode; providers: { google:
         {mode === "sign-up" && (
           <div>
             <label className="label" htmlFor="name">Name</label>
-            <input id="name" className="input" required value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
+            <input id="name" name="name" className="input" required value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
           </div>
         )}
         <div>
           <label className="label" htmlFor="email">Email</label>
-          <input id="email" type="email" className="input" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+          <input id="email" name="email" type="email" spellCheck={false} className="input" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
         </div>
         {method === "password" && (
           <div>
             <label className="label" htmlFor="password">Password</label>
             <input
               id="password"
+              name="password"
               type="password"
               className="input"
               required
@@ -144,7 +145,7 @@ export function AuthForm({ mode, providers }: { mode: Mode; providers: { google:
             {mode === "sign-up" && <p className="mt-1 text-xs text-muted">At least 10 characters.</p>}
           </div>
         )}
-        {error && <p className="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger" role="alert">{error}</p>}
+        {error && <p className="rounded-[10px] bg-danger-soft px-3.5 py-2.5 text-sm text-danger" role="alert">{error}</p>}
         <button className="btn-primary" disabled={busy}>
           {busy ? "Please wait…" : method === "magic" ? "Email me a sign-in link" : mode === "sign-in" ? "Sign in" : "Create account"}
         </button>
@@ -152,9 +153,9 @@ export function AuthForm({ mode, providers }: { mode: Mode; providers: { google:
 
       <p className="mt-6 text-center text-sm text-muted">
         {mode === "sign-in" ? (
-          <>New here? <Link href={`/sign-up${next !== "/app" ? `?next=${encodeURIComponent(next)}` : ""}`} className="text-accent underline">Create an account</Link></>
+          <>New here? <Link href={`/sign-up${next !== "/app" ? `?next=${encodeURIComponent(next)}` : ""}`} className="link">Create an account</Link></>
         ) : (
-          <>Already have an account? <Link href="/sign-in" className="text-accent underline">Sign in</Link></>
+          <>Already have an account? <Link href="/sign-in" className="link">Sign in</Link></>
         )}
       </p>
     </div>

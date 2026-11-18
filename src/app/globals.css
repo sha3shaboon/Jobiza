@@ -1,43 +1,104 @@
 @import "tailwindcss";
 
+/*
+ * Jobiza design tokens: "After the rain, in the margins".
+ * Field green frames the product; white is for reading; blossom pink marks
+ * actions on green and evidence (highlights, citation numbers) on white.
+ */
 :root {
-  /* Field palette: mallow greens, blossom pink, sun-dried soil creams */
-  --bg: #f7f4ec;
-  --surface: #fffdf8;
-  --surface-2: #efebe0;
-  --border: #e1dccd;
-  --text: #1f241c;
-  --muted: #5e6558;
-  --accent: #3e6b35;
-  --accent-fg: #fbfaf5;
-  --accent-soft: #e5eedd;
-  --stem: #a84a72;
-  --stem-soft: #f6e5ec;
-  --danger: #a3302a;
-  --success: #3e6b35;
+  color-scheme: light;
+  /* reading surfaces */
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f4f5f3;
+  --border: #e6e8e4;
+  --text: #1b1e24;
+  --muted: #5b616b;
+  /* field (brand chrome) */
+  --field: #21402c;
+  --field-2: #2a4f37;
+  --field-border: #3b5f47;
+  --field-text: #f1eee4;
+  --field-muted: #c3d1c0;
+  /* actions & evidence */
+  --accent: #21402c; /* primary action on white */
+  --accent-fg: #ffffff;
+  --accent-soft: #e8efe9;
+  --blossom: #f3b6ce; /* primary action on field, logo petals */
+  --blossom-fg: #21402c;
+  --cite: #b8467a; /* citation numbers, Arabic name on white */
+  --highlight: #f6cadc;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
+  --success: #2f6b3f;
   /* logo */
-  --blossom: #c25b86;
-  --blossom-centre: #fffdf8;
+  --wordmark: var(--text);
+  --logo-arabic: var(--cite);
+  --logo-divider: var(--border);
+  --blossom-centre: #ffffff;
+  --logo-petal: #c25b86;
+  --focus: #b8467a;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #12150f;
-    --surface: #1a1e16;
-    --surface-2: #232820;
-    --border: #2f362a;
-    --text: #e9e7df;
-    --muted: #9da493;
-    --accent: #9cc48a;
-    --accent-fg: #11160d;
-    --accent-soft: #24301e;
-    --stem: #eaa3c0;
-    --stem-soft: #3a2430;
-    --danger: #e0786f;
-    --success: #9cc48a;
-    --blossom: #e7a0bf;
-    --blossom-centre: #12150f;
+    color-scheme: dark;
+    --bg: #111412;
+    --surface: #171b18;
+    --surface-2: #1d221e;
+    --border: #2c332e;
+    --text: #e9e9e4;
+    --muted: #a2a9a1;
+    --field: #16291d;
+    --field-2: #1e3627;
+    --field-border: #2f4a38;
+    --field-text: #f1eee4;
+    --field-muted: #b3c3b0;
+    --accent: #9fc7a6;
+    --accent-fg: #102016;
+    --accent-soft: #1f2d23;
+    --blossom: #f3b6ce;
+    --blossom-fg: #16291d;
+    --cite: #f0a3c3;
+    --highlight: rgba(243, 182, 206, 0.28);
+    --danger: #f19a92;
+    --danger-soft: #3a1d1b;
+    --success: #9fc7a6;
+    --blossom-centre: #111412;
+    --logo-petal: #e7a0bf;
+    --focus: #f3b6ce;
   }
+}
+
+/* Anything placed on the green field gets light-on-green tokens. */
+.on-field {
+  --text: var(--field-text);
+  --muted: var(--field-muted);
+  --border: var(--field-border);
+  --wordmark: var(--field-text);
+  --logo-arabic: var(--blossom);
+  --logo-divider: var(--field-border);
+  --blossom-centre: var(--field);
+  --logo-petal: var(--blossom);
+  --focus: var(--blossom);
+  background: var(--field);
+  color: var(--field-text);
+}
+
+/* Print grain over brand surfaces, matching the illustrations */
+.grain {
+  position: relative;
+  isolation: isolate;
+}
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.16;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 @theme inline {
@@ -47,30 +108,86 @@
   --color-border: var(--border);
   --color-text: var(--text);
   --color-muted: var(--muted);
+  --color-field: var(--field);
+  --color-field-2: var(--field-2);
   --color-accent: var(--accent);
   --color-accent-fg: var(--accent-fg);
   --color-accent-soft: var(--accent-soft);
+  --color-blossom: var(--blossom);
+  --color-cite: var(--cite);
+  --color-highlight: var(--highlight);
   --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
   --color-success: var(--success);
-  --color-stem: var(--stem);
-  --color-stem-soft: var(--stem-soft);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-serif);
-  --font-arabic: var(--font-arabic);
+  --font-sans: var(--font-readex), system-ui, sans-serif;
   --font-display: var(--font-display);
+  --font-naskh: var(--font-naskh);
+  /* 1.25 scale on a 16px base */
+  --text-xs: 0.8rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5625rem;
+  --text-2xl: 1.953rem;
+  --text-3xl: 2.441rem;
+  --text-4xl: 3.052rem;
+  --text-5xl: 3.815rem;
 }
 
+html {
+  -webkit-tap-highlight-color: transparent;
+}
 body {
   background: var(--bg);
   color: var(--text);
+  font-feature-settings: "kern", "liga";
+  touch-action: manipulation;
+}
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 50;
+  padding: 0.5rem 0.875rem;
+  border-radius: 6px;
+  background: var(--field);
+  color: var(--field-text);
+  font-weight: 500;
+}
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* Cited claim: a highlighter stroke, not a background block */
+.cited {
+  background: linear-gradient(transparent 58%, var(--highlight) 58%);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50;
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] px-5 text-base font-medium transition-[background-color,color,opacity,box-shadow] duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-50;
 }
 @utility btn-primary {
-  @apply btn bg-accent text-accent-fg hover:opacity-90;
+  @apply btn bg-accent text-accent-fg hover:bg-[color-mix(in_oklab,var(--accent),black_14%)] dark:hover:bg-[color-mix(in_oklab,var(--accent),white_14%)];
+}
+@utility btn-blossom {
+  @apply btn bg-blossom text-[var(--blossom-fg)] hover:bg-[color-mix(in_oklab,var(--blossom),white_22%)];
 }
 @utility btn-secondary {
   @apply btn border border-border bg-surface text-text hover:bg-surface-2;
@@ -78,14 +195,23 @@ body {
 @utility btn-ghost {
   @apply btn text-muted hover:bg-surface-2 hover:text-text;
 }
+@utility link {
+  @apply font-medium underline decoration-[1.5px] underline-offset-4 hover:decoration-cite;
+}
 @utility input {
-  @apply w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text outline-none placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20;
+  @apply min-h-11 w-full rounded-[10px] border border-border bg-surface px-3.5 text-base text-text outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20;
 }
 @utility label {
-  @apply mb-1 block text-sm font-medium;
+  @apply mb-1.5 block text-sm font-medium;
 }
-@utility card {
-  @apply rounded-xl border border-border bg-surface p-6;
+@utility panel {
+  @apply rounded-[14px] border border-border bg-surface;
+}
+
+/* Native selects: explicit colours so Windows dark mode stays readable */
+select.input {
+  background-color: var(--surface);
+  color: var(--text);
 }
 
 /* Wordmark: "jobiza" in Fraunces with a blossom as the i's dot */
@@ -96,6 +222,7 @@ body {
   letter-spacing: -0.02em;
   line-height: 1;
   white-space: nowrap;
+  color: var(--wordmark);
 }
 .wordmark-i {
   position: relative;
@@ -108,4 +235,31 @@ body {
   width: 0.42em;
   height: 0.42em;
   transform: translateX(-50%);
+}
+
+/* The one orchestrated moment: blossoms open on the landing field */
+@keyframes bloom {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-40deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+.bloom {
+  animation: bloom 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
 }

@@ -6,7 +6,7 @@ const PETAL = "M50 50C43 46 33 33 37 20C39.5 12 47 11 50 18C53 11 60.5 12 63 20C
 export function Blossom({ size, className = "" }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" className={className} aria-hidden>
-      <g fill="var(--blossom)">
+      <g fill="var(--logo-petal)">
         {[0, 72, 144, 216, 288].map((deg) => (
           <path key={deg} d={PETAL} transform={`rotate(${deg} 50 50)`} />
         ))}
@@ -19,7 +19,7 @@ export function Blossom({ size, className = "" }: { size?: number; className?: s
 /** "jobiza" set in Fraunces, with a blossom in place of the i's dot. */
 export function Wordmark({ className = "" }: { className?: string }) {
   return (
-    <span className={`wordmark ${className}`} role="img" aria-label="Jobiza">
+    <span className={`wordmark ${className}`} role="img" aria-label="Jobiza" translate="no">
       <span aria-hidden>
         job
         <span className="wordmark-i">
@@ -52,15 +52,15 @@ export function Logo({
     layout === "inline" ? (
       <span className={`inline-flex items-center gap-[0.45em] ${className}`}>
         <Wordmark />
-        <span className="w-px self-stretch bg-border" aria-hidden />
-        <span lang="ar" dir="rtl" className="font-arabic text-[0.62em] leading-none text-stem">
+        <span className="w-px self-stretch bg-[var(--logo-divider)]" aria-hidden />
+        <span lang="ar" dir="rtl" className="font-naskh text-[0.62em] leading-none text-[var(--logo-arabic)]">
           {ARABIC}
         </span>
       </span>
     ) : (
       <span className={`inline-flex flex-col items-end leading-none ${className}`}>
         <Wordmark />
-        <span lang="ar" dir="rtl" className="mt-[0.14em] font-arabic text-[0.42em] leading-none text-stem">
+        <span lang="ar" dir="rtl" className="mt-[0.14em] font-naskh text-[0.42em] leading-none text-[var(--logo-arabic)]">
           {ARABIC}
         </span>
       </span>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="600 70 220 280" role="img" aria-label="Illustration: a potted khubbayza plant in bloom, with a face on the pot">
+  <defs>
+    <!-- grain: speckled print texture over flat colour -->
+    <filter id="grain" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0.09  0 0 0 0 0.16  0 0 0 0 0.11  0 0 0 -3.4 1.42" result="specks"/>
+      <feComposite in="specks" in2="SourceGraphic" operator="in" result="clipped"/>
+      <feBlend in="SourceGraphic" in2="clipped" mode="multiply"/>
+    </filter>
+    <!-- light grain for the dark arch -->
+    <filter id="grain-light" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="3" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.95  0 0 0 0 0.93  0 0 0 0 0.88  0 0 0 -4.2 1.55" result="s"/>
+      <feComposite in="s" in2="SourceGraphic" operator="in" result="c"/>
+      <feComponentTransfer in="c" result="c2"><feFuncA type="linear" slope=".35"/></feComponentTransfer><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="c2"/></feMerge>
+    </filter>
+    <!-- hand-cut edges -->
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="11" result="t"/>
+      <feDisplacementMap in="SourceGraphic" in2="t" scale="3.2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <path id="petal" d="M50 50C43 46 33 33 37 20C39.5 12 47 11 50 18C53 11 60.5 12 63 20C67 33 57 46 50 50Z"/>
+    <g id="blossom"><use href="#petal"/><use href="#petal" transform="rotate(72 50 50)"/><use href="#petal" transform="rotate(144 50 50)"/><use href="#petal" transform="rotate(216 50 50)"/><use href="#petal" transform="rotate(288 50 50)"/><circle cx="50" cy="50" r="7" fill="#f6e7a8"/></g>
+    <g id="eye"><circle r="13" fill="#fbf7ee"/><circle cx="2.5" cy="1.5" r="6.5" fill="#3a3bb3"/><circle cx="4.5" cy="-0.5" r="2" fill="#fbf7ee"/></g>
+  </defs>
+  <rect x="600" y="330" width="220" height="11" rx="2" fill="#f2c94c" stroke="#16291d" stroke-width="3" filter="url(#rough)"/>
+  <!-- ===== right shelf: potted khubbayza in bloom ===== -->
+  <g filter="url(#rough)">
+    <g fill="none" stroke="#16291d" stroke-width="3.5" stroke-linecap="round">
+      <path d="M700 268c-2-40-14-70-40-96"/>
+      <path d="M712 268c2-50 10-92 34-128"/>
+      <path d="M724 268c6-30 26-50 56-60"/>
+    </g>
+    <g filter="url(#grain)" stroke="#16291d" stroke-width="3">
+      <circle cx="668" cy="214" r="26" fill="#9fc7a6"/>
+      <circle cx="760" cy="204" r="22" fill="#9fc7a6"/>
+      <circle cx="716" cy="182" r="18" fill="#7fb08a"/>
+    </g>
+    <g stroke="#16291d" stroke-width="2" fill="none" stroke-linecap="round">
+      <path d="M668 214l-16-12M668 214l2-20M668 214l18-8M760 204l-14-10M760 204l8-16M760 204l16 2"/>
+    </g>
+    <g filter="url(#grain)" fill="#f3b6ce" stroke="#16291d" stroke-width="2.4">
+      <use href="#blossom" transform="translate(624 132) scale(.78)"/>
+      <use href="#blossom" transform="translate(706 98) scale(.9)"/>
+      <use href="#blossom" transform="translate(756 170) scale(.62)"/>
+    </g>
+    <g filter="url(#grain)" stroke="#16291d" stroke-width="3" stroke-linejoin="round">
+      <path d="M664 330l-10-62h120l-10 62z" fill="#f1eee4"/>
+      <rect x="648" y="258" width="132" height="16" rx="4" fill="#f3b6ce"/>
+    </g>
+    <use href="#eye" x="696" y="300"/><use href="#eye" x="732" y="300"/>
+    <path d="M706 318q8 7 16 0" stroke="#16291d" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
+
+  
+</svg>

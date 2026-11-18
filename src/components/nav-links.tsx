@@ -14,7 +14,7 @@ const items = [
 export function NavLinks() {
   const path = usePathname();
   return (
-    <nav className="flex gap-1 overflow-x-auto px-2 pb-3 md:flex-col md:px-3 md:pb-0">
+    <nav aria-label="Main" className="flex gap-1 overflow-x-auto px-2 pb-3 md:flex-col md:px-3 md:pb-0">
       {items.map((i) => {
         const active = i.href === "/app" ? path === "/app" : path.startsWith(i.href);
         if (i.phase) {
@@ -22,10 +22,11 @@ export function NavLinks() {
             <span
               key={i.href}
               title={`Coming in phase ${i.phase}`}
-              className="hidden shrink-0 items-center justify-between gap-2 rounded-md px-3 py-2 text-sm text-muted/70 md:flex"
+              aria-disabled="true"
+              className="hidden min-h-10 shrink-0 items-center justify-between gap-2 rounded-[10px] px-3 text-[15px] text-[var(--field-muted)] opacity-70 md:flex"
             >
               {i.label}
-              <span className="rounded bg-surface-2 px-1.5 py-0.5 text-[10px]">soon</span>
+              <span className="rounded-full border border-[var(--field-border)] px-2 py-0.5 text-[11px]">Soon</span>
             </span>
           );
         }
@@ -33,7 +34,8 @@ export function NavLinks() {
           <Link
             key={i.href}
             href={i.href}
-            className={`shrink-0 rounded-md px-3 py-2 text-sm ${active ? "bg-accent-soft font-medium text-accent" : "text-text hover:bg-surface-2"}`}
+            aria-current={active ? "page" : undefined}
+            className={`flex min-h-10 shrink-0 items-center rounded-[10px] px-3 text-[15px] transition-colors duration-150 ${active ? "bg-blossom font-medium text-[var(--blossom-fg)]" : "text-[var(--field-text)] hover:bg-field-2"}`}
           >
             {i.label}
           </Link>

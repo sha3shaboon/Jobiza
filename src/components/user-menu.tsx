@@ -13,24 +13,21 @@ export function UserMenu({ name, email, compact = false }: { name: string; email
   };
   if (compact) {
     return (
-      <button className="btn-ghost px-2 py-1 text-xs" onClick={onSignOut} title={`Signed in as ${name}`}>
+      <button className="btn-ghost min-h-9 px-2.5 text-sm text-[var(--field-muted)] hover:bg-field-2 hover:text-[var(--field-text)]" onClick={onSignOut} title={`Signed in as ${name}`}>
         Sign out
       </button>
     );
   }
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-semibold text-accent">
+      <div aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blossom text-sm font-semibold text-[var(--blossom-fg)]">
         {name.slice(0, 1).toUpperCase()}
       </div>
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-medium">{name}</div>
         <div className="truncate text-xs text-muted">{displayEmail}</div>
       </div>
-      <button
-        className="btn-ghost px-2 py-1 text-xs"
-        onClick={onSignOut}
-      >
+      <button className="btn-ghost min-h-9 px-2.5 text-sm text-[var(--field-muted)] hover:bg-field-2 hover:text-[var(--field-text)]" onClick={onSignOut}>
         Sign out
       </button>
     </div>

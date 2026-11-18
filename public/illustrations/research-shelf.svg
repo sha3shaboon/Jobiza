@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" role="img" aria-label="Illustration: a shelf of research tools with faces: books, a highlighter, a magnifying glass with an eye, a highlighted paper and a potted mallow plant in bloom">
+  <defs>
+    <!-- grain: speckled print texture over flat colour -->
+    <filter id="grain" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0.09  0 0 0 0 0.16  0 0 0 0 0.11  0 0 0 -3.4 1.42" result="specks"/>
+      <feComposite in="specks" in2="SourceGraphic" operator="in" result="clipped"/>
+      <feBlend in="SourceGraphic" in2="clipped" mode="multiply"/>
+    </filter>
+    <!-- light grain for the dark arch -->
+    <filter id="grain-light" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="3" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.95  0 0 0 0 0.93  0 0 0 0 0.88  0 0 0 -4.2 1.55" result="s"/>
+      <feComposite in="s" in2="SourceGraphic" operator="in" result="c"/>
+      <feComponentTransfer in="c" result="c2"><feFuncA type="linear" slope=".35"/></feComponentTransfer><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="c2"/></feMerge>
+    </filter>
+    <!-- hand-cut edges -->
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="11" result="t"/>
+      <feDisplacementMap in="SourceGraphic" in2="t" scale="3.2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <path id="petal" d="M50 50C43 46 33 33 37 20C39.5 12 47 11 50 18C53 11 60.5 12 63 20C67 33 57 46 50 50Z"/>
+    <g id="blossom"><use href="#petal"/><use href="#petal" transform="rotate(72 50 50)"/><use href="#petal" transform="rotate(144 50 50)"/><use href="#petal" transform="rotate(216 50 50)"/><use href="#petal" transform="rotate(288 50 50)"/><circle cx="50" cy="50" r="7" fill="#f6e7a8"/></g>
+    <g id="eye"><circle r="13" fill="#fbf7ee"/><circle cx="2.5" cy="1.5" r="6.5" fill="#3a3bb3"/><circle cx="4.5" cy="-0.5" r="2" fill="#fbf7ee"/></g>
+  </defs>
+
+  <!-- arch -->
+  <path d="M60 560A440 440 0 0 1 940 560Z" fill="#183021" filter="url(#grain-light)"/>
+
+  <!-- doodles -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".75">
+    <path d="M150 300c30-40 70 10 100-25s60 5 90-20" stroke="#f3b6ce" stroke-width="3"/>
+    <path d="M700 150c25 30 55-20 85 5s40 40 75 10" stroke="#f3b6ce" stroke-width="3"/>
+    <path d="M820 470c20-25 45 15 70-10" stroke="#9fc7a6" stroke-width="3"/>
+    <path d="M240 210c10 18 30 18 40 0s30-18 40 0" stroke="#9fc7a6" stroke-width="3"/>
+    <path d="M330 150l14 24h-28z" stroke="#f1eee4" stroke-width="2.5"/>
+    <path d="M880 260l10 18h-20z" stroke="#f1eee4" stroke-width="2.5"/>
+    <rect x="130" y="390" width="22" height="12" rx="2" transform="rotate(-18 141 396)" stroke="#f1eee4" stroke-width="2.5"/>
+    <rect x="610" y="120" width="20" height="11" rx="2" transform="rotate(24 620 125)" stroke="#f1eee4" stroke-width="2.5"/>
+    <path d="M470 115c0-10 8-16 16-16M492 115c0-10 8-16 16-16" stroke="#f6e7a8" stroke-width="4"/>
+  </g>
+  <g filter="url(#grain)">
+    <circle cx="410" cy="180" r="9" fill="#e8604c"/>
+    <circle cx="560" cy="95" r="11" fill="#9fc7a6"/>
+    <circle cx="200" cy="350" r="7" fill="#f6e7a8"/>
+    <circle cx="905" cy="390" r="9" fill="#f3b6ce"/>
+    <circle cx="760" cy="420" r="6" fill="#e8604c"/>
+    <circle cx="95" cy="520" r="8" fill="#3a3bb3"/>
+  </g>
+
+  <!-- shelves -->
+  <g filter="url(#rough)" fill="#f2c94c" stroke="#16291d" stroke-width="3">
+    <rect x="110" y="468" width="330" height="11" rx="2"/>
+    <rect x="610" y="330" width="300" height="11" rx="2"/>
+    <rect x="300" y="520" width="470" height="11" rx="2"/>
+  </g>
+
+  <!-- ===== left shelf: book stack with a face ===== -->
+  <g filter="url(#rough)">
+    <g filter="url(#grain)" stroke="#16291d" stroke-width="3" stroke-linejoin="round">
+      <rect x="140" y="420" width="190" height="48" rx="5" fill="#f3b6ce"/>
+      <rect x="158" y="380" width="160" height="40" rx="5" fill="#f1eee4"/>
+      <rect x="170" y="346" width="138" height="34" rx="5" fill="#9fc7a6"/>
+      <rect x="160" y="316" width="122" height="30" rx="5" fill="#f2c94c" transform="rotate(-4 220 331)"/>
+    </g>
+    <g stroke="#16291d" stroke-width="3" stroke-linecap="round" fill="none">
+      <path d="M156 428v32M314 428v32M174 388v24M302 388v24M186 352v22M292 352v22"/>
+    </g>
+    <use href="#eye" x="210" y="444"/><use href="#eye" x="246" y="444"/>
+    <path d="M220 460q8 6 16 0" stroke="#16291d" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- highlighter standing on the left shelf -->
+  <g filter="url(#rough)">
+    <g filter="url(#grain)" stroke="#16291d" stroke-width="3" stroke-linejoin="round">
+      <path d="M368 468v-138q0-14 14-14h20q14 0 14 14v138z" fill="#f2c94c"/>
+      <path d="M372 316v-40q0-12 12-12h16q12 0 12 12v40z" fill="#e8604c"/>
+      <rect x="376" y="250" width="32" height="16" rx="5" fill="#e8604c"/>
+    </g>
+    <use href="#eye" transform="translate(381 372) scale(.85)"/><use href="#eye" transform="translate(404 372) scale(.85)"/>
+    <path d="M380 420h28M380 434h28" stroke="#16291d" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- ===== centre: magnifying glass with an eye for a lens ===== -->
+  <g filter="url(#rough)">
+    <g filter="url(#grain)" stroke="#16291d" stroke-width="3" stroke-linejoin="round">
+      <path d="M498 520l52-140 28 10-46 132z" fill="#3a3bb3"/>
+      <circle cx="590" cy="300" r="96" fill="#f1eee4"/>
+      <circle cx="590" cy="300" r="76" fill="#fbf7ee"/>
+    </g>
+    <circle cx="566" cy="312" r="40" fill="#f3b6ce" stroke="#16291d" stroke-width="3"/>
+    <circle cx="560" cy="318" r="20" fill="#3a3bb3"/>
+    <circle cx="552" cy="306" r="7" fill="#fbf7ee"/>
+    <path d="M538 238c22-8 46-8 70 2" stroke="#16291d" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M622 262a54 54 0 0 1 22 44" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" opacity=".8"/>
+  </g>
+
+  <!-- mug on the floor shelf -->
+  <g filter="url(#rough)">
+    <g filter="url(#grain)" stroke="#16291d" stroke-width="3" stroke-linejoin="round">
+      <path d="M660 520l-6-62h76l-6 62z" fill="#e8604c"/>
+      <path d="M728 470q24 2 20 24t-24 18" fill="none" stroke="#16291d" stroke-width="12"/><path d="M728 470q24 2 20 24t-24 18" fill="none" stroke="#e8604c" stroke-width="6"/>
+    </g>
+    <use href="#eye" transform="translate(678 486) scale(.72)"/><use href="#eye" transform="translate(704 486) scale(.72)"/>
+    <path d="M684 430c-10-14 10-18 0-32M704 430c-10-14 10-18 0-32" stroke="#f1eee4" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/>
+  </g>
+
+  <!-- ===== right shelf: potted khubbayza in bloom ===== -->
+  <g filter="url(#rough)">
+    <g fill="none" stroke="#16291d" stroke-width="3.5" stroke-linecap="round">
+      <path d="M700 268c-2-40-14-70-40-96"/>
+      <path d="M712 268c2-50 10-92 34-128"/>
+      <path d="M724 268c6-30 26-50 56-60"/>
+    </g>
+    <g filter="url(#grain)" stroke="#16291d" stroke-width="3">
+      <circle cx="668" cy="214" r="26" fill="#9fc7a6"/>
+      <circle cx="760" cy="204" r="22" fill="#9fc7a6"/>
+      <circle cx="716" cy="182" r="18" fill="#7fb08a"/>
+    </g>
+    <g stroke="#16291d" stroke-width="2" fill="none" stroke-linecap="round">
+      <path d="M668 214l-16-12M668 214l2-20M668 214l18-8M760 204l-14-10M760 204l8-16M760 204l16 2"/>
+    </g>
+    <g filter="url(#grain)" fill="#f3b6ce" stroke="#16291d" stroke-width="2.4">
+      <use href="#blossom" transform="translate(624 132) scale(.78)"/>
+      <use href="#blossom" transform="translate(706 98) scale(.9)"/>
+      <use href="#blossom" transform="translate(756 170) scale(.62)"/>
+    </g>
+    <g filter="url(#grain)" stroke="#16291d" stroke-width="3" stroke-linejoin="round">
+      <path d="M664 330l-10-62h120l-10 62z" fill="#f1eee4"/>
+      <rect x="648" y="258" width="132" height="16" rx="4" fill="#f3b6ce"/>
+    </g>
+    <use href="#eye" x="696" y="300"/><use href="#eye" x="732" y="300"/>
+    <path d="M706 318q8 7 16 0" stroke="#16291d" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- paper with highlighted lines and citation marks -->
+  <g filter="url(#rough)" transform="rotate(8 850 270)">
+    <rect x="806" y="200" width="88" height="124" rx="4" fill="#fbf7ee" stroke="#16291d" stroke-width="3" filter="url(#grain)"/>
+    <g stroke-linecap="round">
+      <path d="M820 222h58M820 238h48M820 254h60M820 270h40M820 286h56M820 302h34" stroke="#c9c3b3" stroke-width="4"/>
+      <path d="M820 238h48M820 270h40" stroke="#f3b6ce" stroke-width="9" opacity=".75"/>
+      <path d="M820 238h48M820 270h40" stroke="#5b616b" stroke-width="3"/>
+    </g>
+    <circle cx="874" cy="232" r="5" fill="#b8467a"/><circle cx="866" cy="264" r="5" fill="#b8467a"/>
+  </g>
+</svg>
