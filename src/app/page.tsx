@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Logo, MallowMark } from "@/components/logo";
+import { Blossom, Logo } from "@/components/logo";
 
 const stages = [
   {
@@ -23,7 +23,7 @@ export default function Home() {
   return (
     <div className="flex flex-1 flex-col">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
-        <Logo />
+        <Logo className="text-[30px]" />
         <nav className="flex items-center gap-2">
           <Link href="/sign-in" className="btn-ghost">Sign in</Link>
           <Link href="/sign-up" className="btn-primary">Get started</Link>
@@ -32,9 +32,9 @@ export default function Home() {
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-6">
         <section className="relative py-16 sm:py-24">
-          <MallowMark
-            size={360}
-            className="pointer-events-none absolute -top-4 right-[-60px] hidden opacity-30 md:block lg:right-0"
+          <Blossom
+            size={340}
+            className="pointer-events-none absolute top-0 right-[-60px] hidden opacity-[0.12] md:block lg:right-0 dark:md:hidden"
           />
           <p className="mb-4 text-sm font-medium uppercase tracking-wider text-stem">
             A research assistant powered by Claude
@@ -69,7 +69,7 @@ export default function Home() {
 
         <section id="name" className="mb-24 grid items-center gap-10 rounded-2xl bg-accent-soft px-6 py-12 sm:px-12 md:grid-cols-[1fr_1.4fr]">
           <div className="text-center md:text-left">
-            <MallowMark size={72} className="mx-auto mb-4 md:mx-0" />
+            <Blossom size={56} className="mx-auto mb-4 md:mx-0" />
             <p lang="ar" dir="rtl" className="font-arabic text-6xl leading-tight text-accent sm:text-7xl md:text-left">
               خُبَّيْزَة
             </p>
@@ -89,17 +89,16 @@ export default function Home() {
               on a student budget, and feeds the work you&apos;re actually trying to do.
             </p>
             <p className="text-sm text-muted">
-              Our logo is a cluster of its unopened buds: small green globes, sepals twisted shut, a blush of petal
-              just showing. Every idea you plant here is a bud like that, about to open. (The English name,
-              cheeseweed, comes from its seed pods, which look like tiny wheels of cheese.)
+              The dot on our &ldquo;i&rdquo; is its blossom: five small notched petals, the flower every one of those
+              wild plants opens into. (The English name, cheeseweed, comes from its seed pods, which look like tiny
+              wheels of cheese.)
             </p>
           </div>
         </section>
       </main>
 
       <footer className="border-t border-border py-6 text-center text-xs text-muted">
-        <span className="font-serif">Jobiza</span> ·{" "}
-        <span lang="ar" dir="rtl" className="font-arabic">خُبَّيْزَة</span> · grows wherever you plant it. Your papers
+        <Logo href={null} className="text-sm" /> · grows wherever you plant it. Your papers
         and API key stay in your account, and keys are encrypted at rest.
       </footer>
     </div>

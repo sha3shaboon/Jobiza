@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  /* Field palette: bud and leaf greens, a blush of unopened petal, sun-dried soil creams */
+  /* Field palette: mallow greens, blossom pink, sun-dried soil creams */
   --bg: #f7f4ec;
   --surface: #fffdf8;
   --surface-2: #efebe0;
@@ -16,12 +16,8 @@
   --danger: #a3302a;
   --success: #3e6b35;
   /* logo */
-  --bud: #b7d48f;
-  --bud-shade: #a9c97f;
-  --bud-edge: #6c9a4c;
-  --bud-seam: #7fab5c;
-  --bud-tip: #8a6a4a;
-  --petal-peek: #eab3c7;
+  --blossom: #c25b86;
+  --blossom-centre: #fffdf8;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -39,12 +35,8 @@
     --stem-soft: #3a2430;
     --danger: #e0786f;
     --success: #9cc48a;
-    --bud: #9cc477;
-    --bud-shade: #88b265;
-    --bud-edge: #c2dea6;
-    --bud-seam: #6d9a50;
-    --bud-tip: #4c3a28;
-    --petal-peek: #f0bdd0;
+    --blossom: #e7a0bf;
+    --blossom-centre: #12150f;
   }
 }
 
@@ -66,6 +58,7 @@
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-serif);
   --font-arabic: var(--font-arabic);
+  --font-display: var(--font-display);
 }
 
 body {
@@ -93,4 +86,26 @@ body {
 }
 @utility card {
   @apply rounded-xl border border-border bg-surface p-6;
+}
+
+/* Wordmark: "jobiza" in Fraunces with a blossom as the i's dot */
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-variation-settings: "opsz" 72;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.wordmark-i {
+  position: relative;
+  display: inline-block;
+}
+.wordmark-dot {
+  position: absolute;
+  left: 46%;
+  top: -0.04em;
+  width: 0.42em;
+  height: 0.42em;
+  transform: translateX(-50%);
 }

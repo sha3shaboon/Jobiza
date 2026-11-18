@@ -35,6 +35,6 @@ every claim traced to a source.
 
 - **Name:** Jobiza, from خُبَّيْزَة (*khubbayza*, *Malva parviflora*, cheeseweed), the wild mallow that comes up on its own after the rains. The Arabic name is shown beside the wordmark.
 - **Idea:** a self-growing library. You plant your sources and your research grows from them. The landing-page stages are Plant (library), Spread (literature review) and Harvest (writing).
-- **Mark:** a cluster of the plant's unopened buds: a large bud seen from above, with five twisted sepals and a blush of petal just showing, plus two side buds on a short stem. Source: `src/components/logo.tsx` (theme-aware) and `src/app/icon.svg` (favicon).
-- **Palette:** bud and leaf greens (primary), a petal blush (secondary), sun-dried creams (background). Tokens live in `src/app/globals.css`.
-- **Type:** Source Serif 4 (headings), Geist (UI), Noto Naskh Arabic (Arabic name).
+- **Logo:** the "jobiza" wordmark in Fraunces, with a flat five-petal mallow blossom as the dot of the i. خُبَّيْزَة is set beside it (headers, nav) or underneath it, under "za" (landing, sign-in). The blossom on its own is the app icon. Source: `src/components/logo.tsx` (`Wordmark`, `Blossom`, `Logo` with `inline` / `stacked` layouts) and `src/app/icon.svg`.
+- **Palette:** mallow greens (primary), blossom pink (logo and accents), sun-dried creams (background). Tokens live in `src/app/globals.css`.
+- **Type:** Fraunces (wordmark), Source Serif 4 (headings), Geist (UI), Noto Naskh Arabic (Arabic name).

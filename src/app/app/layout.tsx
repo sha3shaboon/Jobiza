@@ -10,7 +10,7 @@ async function SessionGate({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen flex-col md:flex-row">
       <aside className="flex shrink-0 flex-col border-b border-border bg-surface md:w-60 md:border-r md:border-b-0">
         <div className="flex items-center justify-between px-4 py-4 md:px-5">
-          <Logo href="/app" />
+          <Logo href="/app" className="text-[25px]" />
           <div className="md:hidden">
             <UserMenu name={user.name} email={user.email} compact />
           </div>
