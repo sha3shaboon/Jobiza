@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="600 70 220 280" role="img" aria-label="Illustration: a potted khubbayza plant in bloom, with a face on the pot">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="600 70 220 280" role="img" aria-label="Illustration: a potted khubbayza plant in bloom">
   <defs>
     <!-- grain: speckled print texture over flat colour -->
     <filter id="grain" x="-5%" y="-5%" width="110%" height="110%">
@@ -21,7 +21,6 @@
     </filter>
     <path id="petal" d="M50 50C43 46 33 33 37 20C39.5 12 47 11 50 18C53 11 60.5 12 63 20C67 33 57 46 50 50Z"/>
     <g id="blossom"><use href="#petal"/><use href="#petal" transform="rotate(72 50 50)"/><use href="#petal" transform="rotate(144 50 50)"/><use href="#petal" transform="rotate(216 50 50)"/><use href="#petal" transform="rotate(288 50 50)"/><circle cx="50" cy="50" r="7" fill="#f6e7a8"/></g>
-    <g id="eye"><circle r="13" fill="#fbf7ee"/><circle cx="2.5" cy="1.5" r="6.5" fill="#3a3bb3"/><circle cx="4.5" cy="-0.5" r="2" fill="#fbf7ee"/></g>
   </defs>
   <rect x="600" y="330" width="220" height="11" rx="2" fill="#f2c94c" stroke="#16291d" stroke-width="3" filter="url(#rough)"/>
   <!-- ===== right shelf: potted khubbayza in bloom ===== -->
@@ -48,8 +47,6 @@
       <path d="M664 330l-10-62h120l-10 62z" fill="#f1eee4"/>
       <rect x="648" y="258" width="132" height="16" rx="4" fill="#f3b6ce"/>
     </g>
-    <use href="#eye" x="696" y="300"/><use href="#eye" x="732" y="300"/>
-    <path d="M706 318q8 7 16 0" stroke="#16291d" stroke-width="3" fill="none" stroke-linecap="round"/>
   </g>
 
   

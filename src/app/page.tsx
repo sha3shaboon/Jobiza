@@ -56,7 +56,7 @@ export default function Home() {
           {/* eslint-disable-next-line @next/next/no-img-element -- static SVG illustration with filters */}
           <img
             src="/illustrations/research-shelf.svg"
-            alt="A shelf of research tools with faces: books, a highlighter, a magnifying glass with an eye, a highlighted paper, and a potted khubbayza in bloom"
+            alt="A shelf of research tools: books, a highlighter, a magnifying glass over a highlighted, cited line of text, a paper, and a potted khubbayza in bloom"
             width={1000}
             height={560}
             fetchPriority="high"
