@@ -15,9 +15,9 @@
   --text: #1b1e24;
   --muted: #5b616b;
   /* field (brand chrome) */
-  --field: #21402c;
-  --field-2: #2a4f37;
-  --field-border: #3b5f47;
+  --field: #183021;
+  --field-2: #21402c;
+  --field-border: #33503d;
   --field-text: #f1eee4;
   --field-muted: #c3d1c0;
   /* actions & evidence */
@@ -49,9 +49,9 @@
     --border: #2c332e;
     --text: #e9e9e4;
     --muted: #a2a9a1;
-    --field: #16291d;
-    --field-2: #1e3627;
-    --field-border: #2f4a38;
+    --field: #132619;
+    --field-2: #1b3323;
+    --field-border: #2c4634;
     --field-text: #f1eee4;
     --field-muted: #b3c3b0;
     --accent: #9fc7a6;
@@ -85,7 +85,7 @@
   color: var(--field-text);
 }
 
-/* Print grain over brand surfaces, matching the illustrations */
+/* Speckled print grain over brand surfaces, matching the illustrations */
 .grain {
   position: relative;
   isolation: isolate;
@@ -96,9 +96,7 @@
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.16;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='1' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0 0.88 0 0 0 -4.2 1.55'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
 }
 
 @theme inline {

@@ -60,7 +60,7 @@ export default function Home() {
             width={1000}
             height={560}
             fetchPriority="high"
-            className="mt-10 -mb-px block h-auto w-full max-w-[1180px]"
+            className="mt-10 mb-10 block h-auto w-full max-w-[1180px]"
           />
         </section>
       </div>

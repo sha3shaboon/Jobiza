@@ -7,13 +7,6 @@
       <feComposite in="specks" in2="SourceGraphic" operator="in" result="clipped"/>
       <feBlend in="SourceGraphic" in2="clipped" mode="multiply"/>
     </filter>
-    <!-- light grain for the dark arch -->
-    <filter id="grain-light" x="0" y="0" width="100%" height="100%">
-      <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="3" result="n"/>
-      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.95  0 0 0 0 0.93  0 0 0 0 0.88  0 0 0 -4.2 1.55" result="s"/>
-      <feComposite in="s" in2="SourceGraphic" operator="in" result="c"/>
-      <feComponentTransfer in="c" result="c2"><feFuncA type="linear" slope=".35"/></feComponentTransfer><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="c2"/></feMerge>
-    </filter>
     <!-- hand-cut edges -->
     <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
       <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="11" result="t"/>
@@ -23,8 +16,6 @@
     <g id="blossom"><use href="#petal"/><use href="#petal" transform="rotate(72 50 50)"/><use href="#petal" transform="rotate(144 50 50)"/><use href="#petal" transform="rotate(216 50 50)"/><use href="#petal" transform="rotate(288 50 50)"/><circle cx="50" cy="50" r="7" fill="#f6e7a8"/></g>
   </defs>
 
-  <!-- arch -->
-  <path d="M60 560A440 440 0 0 1 940 560Z" fill="#183021" filter="url(#grain-light)"/>
 
   <!-- doodles: loose, hand-drawn, filling the arch -->
   <g fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#rough)">
