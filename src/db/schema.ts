@@ -277,6 +277,115 @@ export const message = pgTable(
   (t) => [index("message_conversation_idx").on(t.conversationId, t.createdAt)],
 );
 
+/* ───────────── Literature reviews ───────────── */
+
+export const reviewMode = pgEnum("review_mode", ["agentic", "screening"]);
+export const reviewStatus = pgEnum("review_status", [
+  "draft",
+  "searching",
+  "screening",
+  "retrieving",
+  "extracting",
+  "synthesizing",
+  "ready",
+  "failed",
+]);
+
+export type ReviewCriteria = { include: string[]; exclude: string[]; yearFrom?: number; yearTo?: number };
+/** PRISMA identification counts, written when a search runs. */
+export type ReviewCounts = {
+  identified: Record<string, number>;
+  duplicates: number;
+  unavailable: { source: string; reason: string }[];
+};
+
+export const review = pgTable(
+  "review",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    question: text("question").notNull(),
+    mode: reviewMode("mode").notNull(),
+    status: reviewStatus("status").notNull().default("draft"),
+    statusDetail: text("status_detail"),
+    criteria: jsonb("criteria").$type<ReviewCriteria>().notNull().default({ include: [], exclude: [] }),
+    queries: jsonb("queries").$type<string[]>().notNull().default([]),
+    sources: jsonb("sources").$type<string[]>().notNull().default(["openalex", "semantic_scholar", "arxiv", "pubmed"]),
+    matrixColumns: jsonb("matrix_columns").$type<string[]>().notNull().default([]),
+    counts: jsonb("counts").$type<ReviewCounts>(),
+    synthesis: text("synthesis"),
+    synthesisCitations: jsonb("synthesis_citations").$type<MessageCitation[]>().notNull().default([]),
+    ...timestamps,
+  },
+  (t) => [index("review_user_idx").on(t.userId, t.updatedAt)],
+);
+
+export const screeningDecision = pgEnum("screening_decision", ["pending", "included", "excluded"]);
+export const decisionBy = pgEnum("decision_by", ["ai", "user"]);
+export const fullTextStatus = pgEnum("full_text_status", ["not_requested", "pending", "retrieved", "abstract_only", "failed"]);
+
+export type AiScreening = { decision: "include" | "exclude"; reason: string; relevance: number };
+export type MatrixCell = { value: string; page?: number };
+
+/** One unique work found by a review's searches. */
+export const reviewRecord = pgTable(
+  "review_record",
+  {
+    id: text("id").primaryKey(),
+    reviewId: text("review_id")
+      .notNull()
+      .references(() => review.id, { onDelete: "cascade" }),
+    key: text("key").notNull(),
+    title: text("title").notNull(),
+    authors: jsonb("authors").$type<string[]>().notNull().default([]),
+    year: integer("year"),
+    venue: text("venue"),
+    abstract: text("abstract"),
+    doi: text("doi"),
+    pmid: text("pmid"),
+    arxivId: text("arxiv_id"),
+    url: text("url"),
+    openAccessPdfUrl: text("open_access_pdf_url"),
+    citationCount: integer("citation_count"),
+    sources: jsonb("sources").$type<string[]>().notNull().default([]),
+    rank: integer("rank").notNull().default(0),
+    screening: screeningDecision("screening").notNull().default("pending"),
+    exclusionReason: text("exclusion_reason"),
+    decidedBy: decisionBy("decided_by"),
+    ai: jsonb("ai").$type<AiScreening>(),
+    fullText: fullTextStatus("full_text").notNull().default("not_requested"),
+    paperId: text("paper_id").references(() => paper.id, { onDelete: "set null" }),
+    matrix: jsonb("matrix").$type<Record<string, MatrixCell>>(),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("review_record_key_idx").on(t.reviewId, t.key),
+    index("review_record_screening_idx").on(t.reviewId, t.screening),
+  ],
+);
+
+/** Activity log: what the review did and decided, in order (the PRISMA audit trail). */
+export const reviewEvent = pgTable(
+  "review_event",
+  {
+    id: text("id").primaryKey(),
+    reviewId: text("review_id")
+      .notNull()
+      .references(() => review.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    message: text("message").notNull(),
+    data: jsonb("data").$type<Record<string, unknown>>(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("review_event_review_idx").on(t.reviewId, t.createdAt)],
+);
+
 /* ───────────── Relations ───────────── */
 
 export const userRelations = relations(user, ({ one, many }) => ({

@@ -13,8 +13,8 @@ See [`docs/SPEC.md`](docs/SPEC.md) for the product decisions and the phased buil
 |---|---|---|
 | 1. Foundation | Docker stack, DB schema, auth (magic link, password, Google, ORCID), encrypted BYOK, model picker, worker | ✅ done |
 | 2. Library + chat | PDF/DOI/URL ingest, OCR, local embeddings, hybrid search, cited chat, PDF viewer | ✅ done |
-| 3. Literature review | Source connectors, agentic + screening modes, PRISMA log, matrix | next |
-| 4. Writing editor | CSL citations, Zotero/BibTeX, claim checker, DOCX/PDF/LaTeX export | planned |
+| 3. Literature review | Source connectors, agentic + screening modes, PRISMA log, matrix | ✅ done |
+| 4. Writing editor | CSL citations, Zotero/BibTeX, claim checker, DOCX/PDF/LaTeX export | next |
 | 5. Polish | API docs for desktop/mobile clients, deploy guide | planned |
 
 ## Run it with Docker (recommended)
@@ -57,6 +57,20 @@ With `SMTP_URL` empty, emails are printed to the web server console.
 
 The embedding model (about 35 MB) downloads on first use into `MODEL_CACHE_DIR`.
 
+## How literature reviews work
+
+A review starts from a research question, in one of two modes:
+
+- **Research it for me (agentic)**: Claude plans 3 to 6 queries and the criteria, Jobiza searches every source, Claude screens up to 200 records by title and abstract, the 10 most relevant are read (full text when open access, else the abstract), a comparison table is filled from each study's text, and a synthesis is written that cites the passages it used.
+- **I'll screen the papers (screening)**: you set queries, sources, years, criteria and table columns (Claude can suggest them), run the search, and include or exclude each record. Claude can suggest decisions, but they apply only when you accept them. Then you get the included studies, fill the table and write the synthesis, one step at a time.
+
+Details:
+
+- **Sources**: OpenAlex, Semantic Scholar, arXiv and PubMed (25 results per query per source). Results are merged across sources by DOI, PMID, arXiv id or title, and duplicates are counted for PRISMA.
+- **Rate limits**: without API keys, OpenAlex, Semantic Scholar and arXiv share a small budget per IP address. A busy source is skipped and noted in the review, and the rest carry on. Free keys are in `.env.example`.
+- **Full text**: included studies are added to your library. PMC articles come from Europe PMC's open full-text API. When a publisher blocks the download, the abstract is used and the reason is shown.
+- **Audit trail**: the PRISMA tab shows identification, screening (with exclusion reasons), retrieval and inclusion counts plus an activity log. The screening log downloads as CSV, with every decision, who made it (you or Claude) and why.
+
 ## Sign-in providers
 
 Email/password and magic links work out of the box. Google and ORCID buttons appear only when their credentials are set:
@@ -96,6 +110,13 @@ Every endpoint accepts a session cookie or `Authorization: Bearer <token>`. The 
 | GET / POST | `/api/v1/conversations` | List; start one (`scopePaperIds` optional) |
 | GET / PATCH / DELETE | `/api/v1/conversations/:id` | Messages with citations; change scope; delete |
 | POST | `/api/v1/conversations/:id/messages` | Ask `{ "question": "…" }`; streams Server-Sent Events: `sources`, `text`, then `done` or `error` |
+| GET / POST | `/api/v1/reviews` | List; start `{ question, mode: "agentic" \| "screening" }` |
+| GET / PATCH / DELETE | `/api/v1/reviews/:id` | Review with records, PRISMA counts and log; edit queries, criteria, sources, columns |
+| POST | `/api/v1/reviews/:id/plan` | Claude suggests queries, criteria and columns |
+| POST | `/api/v1/reviews/:id/steps` | Queue `{ step: "run" \| "search" \| "ai-screen" \| "retrieve" \| "extract" \| "synthesize" }` |
+| PATCH | `/api/v1/reviews/:id/records/:recordId` | Screening decision `{ screening, reason? }` |
+| POST | `/api/v1/reviews/:id/accept-suggestions` | Apply Claude's suggestions to undecided records |
+| GET | `/api/v1/reviews/:id/export` | Screening log as CSV |
 
 ## Project layout
 

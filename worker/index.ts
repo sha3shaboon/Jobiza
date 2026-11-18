@@ -1,17 +1,24 @@
 /**
  * Background worker: long-running jobs live here, outside the web process
  * (PDF ingestion, embeddings and literature-review agents in later phases).
- * Jobs: paper ingestion (PDF text, OCR of scanned pages, chunking, embeddings).
+ * Jobs: paper ingestion (PDF text, OCR, chunking, embeddings) and literature-review steps
+ * (search, screening, full-text retrieval, table extraction, synthesis).
  */
 import { Queue, Worker, type Job } from "bullmq";
 import IORedis from "ioredis";
 import { ingestPaper } from "../src/server/ingest";
-import { QUEUE_NAME, type IngestJob, type JobName } from "../src/server/queue-names";
+import { runReviewStep } from "../src/server/reviews";
+import { QUEUE_NAME, type IngestJob, type JobName, type ReviewStepJob } from "../src/server/queue-names";
 
 const connection = new IORedis(process.env.REDIS_URL ?? "redis://localhost:6379", { maxRetriesPerRequest: null });
 
 const handlers: Record<JobName, (job: Job) => Promise<unknown>> = {
   ping: async (job) => ({ pong: true, receivedAt: new Date().toISOString(), data: job.data }),
+  "review-step": async (job) => {
+    const { reviewId, step } = job.data as ReviewStepJob;
+    await runReviewStep(reviewId, step);
+    return { reviewId, step };
+  },
   "ingest-paper": async (job) => {
     await ingestPaper((job.data as IngestJob).paperId);
     return { paperId: (job.data as IngestJob).paperId };

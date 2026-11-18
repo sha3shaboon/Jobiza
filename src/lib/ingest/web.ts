@@ -1,6 +1,7 @@
 import { Readability } from "@mozilla/readability";
 import { parseHTML } from "linkedom";
 import { safeFetch } from "../net/safe-fetch";
+import { europePmcFullTextUrl, parseJats } from "./jats";
 import { looksLikePdf } from "./storage";
 import { findDoi, normalizeDoi, normalizeText } from "./text";
 
@@ -19,8 +20,22 @@ export type FetchedSource =
 
 /** Fetch a user-supplied link. PDFs come back as-is; web pages as readable article text. */
 export async function fetchSource(rawUrl: string): Promise<FetchedSource> {
-  const res = await safeFetch(rawUrl, { accept: "application/pdf,text/html;q=0.9,*/*;q=0.5" });
+  // PMC answers automated requests with a captcha; Europe PMC serves the same open-access full text.
+  const target = europePmcFullTextUrl(rawUrl) ?? rawUrl;
+  const res = await safeFetch(target, { accept: "application/pdf,text/html;q=0.9,application/xml;q=0.8,*/*;q=0.5" });
   if (res.contentType.includes("pdf") || looksLikePdf(res.body)) return { kind: "pdf", data: res.body, url: res.url };
+  if (res.contentType.includes("xml") && /<article[\s>]/.test(res.body.subarray(0, 4000).toString("utf8"))) {
+    const jats = parseJats(res.body.toString("utf8"));
+    if (!jats.sections.length) throw new Error("That article has no open full text.");
+    return {
+      kind: "article",
+      url: rawUrl,
+      title: jats.title ?? rawUrl,
+      byline: jats.authors.join(", ") || undefined,
+      doi: jats.doi ? (normalizeDoi(jats.doi) ?? undefined) : undefined,
+      sections: jats.abstract ? [jats.abstract, ...jats.sections] : jats.sections,
+    };
+  }
   if (!res.contentType.includes("html")) throw new Error("That link isn't a web page or a PDF.");
 
   const { document } = parseHTML(res.body.toString("utf8"));

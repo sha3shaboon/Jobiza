@@ -74,34 +74,49 @@ export async function ingestPaper(paperId: string): Promise<void> {
 
     let pdf: Buffer | null = null;
     let pages: Page[] = [];
+    let downloadNote: string | null = null;
 
     if (paper.source === "upload") {
       if (!paper.fileKey) throw new IngestError("The uploaded file is missing.");
       pdf = await loadFile(paper.fileKey);
     } else if (paper.source === "doi") {
       const meta = await lookupDoi(paper.doi!);
-      if (!meta) throw new IngestError("Couldn't find that DOI in Crossref or OpenAlex.");
-      await patch(applyMetadata(current, meta, { overwriteTitle: true }));
-      if (meta.openAccessPdfUrl) pdf = await fetchPdf(meta.openAccessPdfUrl);
+      // Records added from a literature review already carry title and abstract.
+      if (!meta && !paper.abstract) throw new IngestError("Couldn't find that DOI in Crossref or OpenAlex.");
+      if (meta) await patch(applyMetadata(current, meta, { overwriteTitle: isPlaceholderTitle(current) }));
+      if (meta?.openAccessPdfUrl) pdf = await fetchPdf(meta.openAccessPdfUrl);
       if (!pdf) {
-        if (!meta.abstract) {
+        const abstract = current.abstract ?? meta?.abstract;
+        if (!abstract) {
           throw new IngestError("No open-access version was found. Download the PDF from the publisher and upload it.");
         }
-        pages = [{ pageNumber: 1, text: meta.abstract, method: "web" }];
+        pages = [{ pageNumber: 1, text: abstract, method: "web" }];
         await patch({ metadataOnly: true });
       }
     } else {
-      const fetched = await fetchSource(paper.url!);
-      if (fetched.kind === "pdf") {
+      let fetched: Awaited<ReturnType<typeof fetchSource>> | null = null;
+      try {
+        fetched = await fetchSource(paper.url!);
+      } catch (err) {
+        // Records from a literature review carry an abstract: index it rather than failing.
+        if (err instanceof UnsafeUrlError || !paper.abstract) throw err;
+        const why = err instanceof Error ? err.message.replace(/\.$/, "") : "the download failed";
+        pages = [{ pageNumber: 1, text: paper.abstract, method: "web" }];
+        downloadNote = `Couldn't download the full text (${why}).`;
+        await patch({ metadataOnly: true });
+      }
+      if (!fetched) {
+        // abstract fallback already set
+      } else if (fetched.kind === "pdf") {
         pdf = fetched.data;
       } else {
         pages = fetched.sections.map((text, i) => ({ pageNumber: i + 1, text, method: "web" as const }));
         await patch({
-          title: fetched.title,
-          authors: fetched.byline ? [{ name: fetched.byline }] : undefined,
+          title: isPlaceholderTitle(current) ? fetched.title : undefined,
+          authors: fetched.byline ? fetched.byline.split(/,\s*/).map((name) => ({ name })) : undefined,
           venue: fetched.siteName,
-          url: fetched.url,
-          doi: fetched.doi,
+          url: current.url ?? fetched.url,
+          doi: current.doi ?? fetched.doi,
         });
         if (fetched.doi) await patch(applyMetadata(current, await lookupDoi(fetched.doi)));
       }
@@ -184,7 +199,9 @@ export async function ingestPaper(paperId: string): Promise<void> {
       const notes = [
         ocrCount ? `${ocrCount} scanned ${ocrCount === 1 ? "page was" : "pages were"} read with Claude.` : null,
         skippedScans ? `${skippedScans} scanned ${skippedScans === 1 ? "page" : "pages"} couldn't be read.` : null,
-        current.metadataOnly ? "Only the abstract is available. Upload the PDF to search the full text." : null,
+        current.metadataOnly
+          ? `${downloadNote ? `${downloadNote} ` : ""}Only the abstract is available. Upload the PDF to search the full text.`
+          : null,
       ].filter(Boolean);
       await tx
         .update(schema.paper)
