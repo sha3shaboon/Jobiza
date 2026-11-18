@@ -25,7 +25,7 @@ every claim traced to a source.
 
 ## Build phases
 
-1. **Foundation** — Compose stack, DB schema, auth (all 4 methods), encrypted BYOK settings, model picker.
+1. ✅ **Foundation** — Compose stack, DB schema, auth (all 4 methods), encrypted BYOK settings, model picker.
 2. **Library + chat** — PDF/DOI/URL ingest, parsing + vision OCR, chunking, local embeddings, hybrid search, cited chat with page-level source highlighting in a PDF viewer.
 3. **Literature review** — source connectors, agentic deep-research job with progress streaming, screening mode + PRISMA log, comparison matrix.
 4. **Writing editor** — rich-text editor with inline citations, CSL styles, Zotero/BibTeX, claim checker, DOCX/PDF/LaTeX export.
