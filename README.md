@@ -91,3 +91,22 @@ drizzle/            SQL migrations
 
 `npm run typecheck` · `npm run lint` · `npm test` (DB integration tests run when `DATABASE_URL` is set) ·
 `npm run db:generate` (new migration from schema changes) · `npm run db:migrate`
+
+## Claude Code skills in this repo
+
+`.claude/skills/` holds the UI/UX skills from
+[Snyk's list of top Claude skills for UI/UX engineers](https://snyk.io/articles/top-claude-skills-ui-ux-engineers/).
+They load automatically in Claude Code sessions opened on this repository:
+
+| Skill | From |
+|---|---|
+| `frontend-design` | anthropics/skills |
+| `web-design-guidelines`, `react-best-practices`, `composition-patterns`, `react-native-skills` | vercel-labs/agent-skills |
+| `ui-ux-pro-max` | nextlevelbuilder/ui-ux-pro-max-skill |
+| `bencium-innovative-ux-designer`, `bencium-controlled-ux-designer` | bencium/bencium-claude-code-design-skill |
+
+Each folder's `SOURCE.md` records the upstream commit, licence and any local changes.
+
+The **AccessLint** accessibility plugin is registered in `.claude/settings.json`. It loads when the repository is
+opened in Claude Code on your computer, after you trust the folder. It does not load in cloud sessions. Its MCP server
+runs `npx @accesslint/mcp@latest`.
