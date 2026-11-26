@@ -1,0 +1,78 @@
+# Builds the Windows desktop installer and smoke-tests the packaged app on a
+# real Windows machine (native modules must be built for the target OS).
+name: Desktop app (Windows)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "desktop/**"
+      - "src/**"
+      - "drizzle/**"
+      - "public/**"
+      - "next.config.ts"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/desktop.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            desktop/package-lock.json
+
+      - name: Install app dependencies
+        run: npm ci
+
+      - name: Build the app
+        run: npm run build
+
+      - name: Install desktop tooling
+        working-directory: desktop
+        run: |
+          npm ci
+          node node_modules/electron/install.js
+
+      - name: Build the installer
+        working-directory: desktop
+        env:
+          # Unsigned build: no code-signing certificate is configured.
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npm run dist:win
+
+      - name: Smoke test the packaged app
+        working-directory: desktop
+        run: node scripts/smoke.cjs dist/win-unpacked/Jobiza.exe
+
+      - name: Upload the installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Jobiza-Windows-installer
+          path: desktop/dist/*.exe
+          retention-days: 30
+
+      - name: Upload smoke-test screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-screenshots
+          path: desktop/smoke-*.png
+          if-no-files-found: ignore

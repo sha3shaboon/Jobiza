@@ -1,7 +1,8 @@
 import "server-only";
 import { Queue } from "bullmq";
 import IORedis from "ioredis";
-import { env } from "@/lib/env";
+import { env, isDesktop } from "@/lib/env";
+import { addLocalIngest, addLocalReviewStep } from "./local-queue";
 import { QUEUE_NAME, type IngestJob, type ReviewStepJob } from "./queue-names";
 
 const g = globalThis as unknown as { __jobizaQueue?: Queue };
@@ -16,6 +17,7 @@ function queue(): Queue {
 
 export async function enqueueIngest(paperId: string) {
   const data: IngestJob = { paperId };
+  if (isDesktop()) return addLocalIngest(data);
   await queue().add("ingest-paper", data, {
     jobId: `ingest-${paperId}-${Date.now()}`,
     attempts: 2,
@@ -27,6 +29,7 @@ export async function enqueueIngest(paperId: string) {
 
 export async function enqueueReviewStep(reviewId: string, step: ReviewStepJob["step"]) {
   const data: ReviewStepJob = { reviewId, step };
+  if (isDesktop()) return addLocalReviewStep(data);
   await queue().add("review-step", data, {
     jobId: `review-${reviewId}-${step}-${Date.now()}`,
     attempts: 1, // steps record their own failures; the user retries from the UI

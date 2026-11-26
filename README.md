@@ -15,6 +15,7 @@ See [`docs/SPEC.md`](docs/SPEC.md) for the product decisions and the phased buil
 | 2. Library + chat | PDF/DOI/URL ingest, OCR, local embeddings, hybrid search, cited chat, PDF viewer | ✅ done |
 | 3. Literature review | Source connectors, agentic + screening modes, PRISMA log, matrix | ✅ done |
 | 4. Writing editor | CSL citations, Zotero/BibTeX, claim checker, DOCX/PDF/LaTeX export | ✅ done |
+| Desktop (Windows) | The whole app on one computer: embedded database, local jobs, no server | ✅ done |
 | 5. Polish | API docs for desktop/mobile clients, deploy guide | next |
 
 ## Run it with Docker (recommended)
@@ -43,6 +44,41 @@ npm run worker:dev           # background worker, in a second terminal
 ```
 
 With `SMTP_URL` empty, emails are printed to the web server console.
+
+## Desktop app (Windows)
+
+The desktop app is the complete Jobiza (library, chat, literature reviews and writing) running on your own computer. There is no server to host and no account to create. Your PDFs, library and documents stay on disk; only Claude (with your own key) and paper searches go online.
+
+**Install:** download `Jobiza-Setup-<version>.exe` from the latest run of the *Desktop app (Windows)* workflow in GitHub Actions (artifact *Jobiza-Windows-installer*), then run it. The installer isn't code-signed yet, so Windows SmartScreen will warn you the first time: choose *More info*, then *Run anyway*. Windows 10 or 11, x64.
+
+**Where things live:**
+
+- Library, database and uploaded PDFs: `%APPDATA%\Jobiza\library` (Help → *Show library folder*). Uninstalling keeps it.
+- Log file: `%APPDATA%\Jobiza\logs\jobiza.log` (Help → *Show log file*).
+- Secrets made on first run (the key that encrypts your Anthropic key, and the local account's password) are stored in `%APPDATA%\Jobiza\secrets.json`, encrypted with Windows DPAPI so only your Windows account can read them.
+
+**How it works:** the Electron shell (`desktop/main.cjs`) starts the same Next.js server as the web build in a background process, on `127.0.0.1` with a random port, and opens it in a window. With `JOBIZA_DESKTOP=1`, the server:
+
+- uses an embedded Postgres ([PGlite](https://pglite.dev), WebAssembly) with pgvector and pg_trgm instead of a Postgres server. The schema and every query are the same; migrations are applied at start-up (`src/server/desktop.ts`);
+- runs ingestion and review steps in-process (`src/server/local-queue.ts`) instead of BullMQ and Redis. Papers that were processing when the app closed are resumed on the next launch. Review steps that were cut off are marked for a re-run, because they spend Claude credits;
+- signs the window in to a single local account through `/api/desktop/session`, using a secret that changes every launch. There's no sign-in page, sign-out or email;
+- ships the embedding model inside the installer, so the library works offline from the first launch.
+
+On quit, the shell asks the server to close the database cleanly before exiting.
+
+**Build it yourself (on Windows):**
+
+```bash
+npm ci && npm run build          # the web app, as a standalone server
+cd desktop
+npm ci
+npm run dist:win                 # → desktop/dist/Jobiza-Setup-<version>.exe
+node scripts/smoke.cjs dist/win-unpacked/Jobiza.exe   # optional end-to-end check
+```
+
+Build on the OS you're targeting: the server's native modules (ONNX runtime, sharp) are picked for the build machine. CI does this on `windows-latest` and runs the smoke test (launch, add a PDF, wait until it's processed, quit cleanly) before uploading the installer. `npm start` in `desktop/` runs the shell against `desktop/build/` for development.
+
+**Not yet:** macOS and Linux installers, code signing, automatic updates, and moving a library between the desktop app and a server.
 
 ## How the library and chat work
 
@@ -146,6 +182,7 @@ src/lib/            env, auth, crypto, Anthropic, email
 src/server/         server-only services (settings, sessions, workspaces)
 worker/             BullMQ background worker
 drizzle/            SQL migrations
+desktop/            Electron shell, installer config and build scripts for the desktop app
 ```
 
 ## Scripts

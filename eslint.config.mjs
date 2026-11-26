@@ -12,7 +12,13 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Desktop app: its own dependencies and generated bundles.
+    "desktop/node_modules/**",
+    "desktop/build/**",
+    "desktop/dist/**",
   ]),
+  // The Electron shell runs as plain CommonJS.
+  { files: ["desktop/**/*.cjs"], rules: { "@typescript-eslint/no-require-imports": "off" } },
 ]);
 
 export default eslintConfig;

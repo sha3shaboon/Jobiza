@@ -1,0 +1,43 @@
+# Packaging for the Jobiza desktop app. The Windows installer is built on a
+# Windows machine (see .github/workflows/desktop.yml), because the server's
+# native modules (ONNX runtime, sharp) must match the target OS.
+appId: app.jobiza.desktop
+productName: Jobiza
+copyright: Jobiza
+directories:
+  output: dist
+  buildResources: build-resources
+files:
+  - main.cjs
+  - splash.html
+  - splash-logo.png
+  - build-resources/icon.png
+  - package.json
+# The server and model run from real files next to the app, outside the asar archive.
+# The server is copied by scripts/after-pack.cjs (extraResources drops node_modules).
+afterPack: scripts/after-pack.cjs
+extraResources:
+  - from: build/models
+    to: models
+    filter: ["**/*"]
+asar: true
+compression: normal
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build-resources/icon.png
+  artifactName: Jobiza-Setup-${version}.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Jobiza
+  # Uninstalling keeps the library; it lives in %APPDATA%\Jobiza.
+  deleteAppDataOnUninstall: false
+linux:
+  target: [dir]
+  icon: build-resources/icon.png
+  category: Education

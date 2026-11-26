@@ -8,7 +8,7 @@ import { magicLink } from "better-auth/plugins/magic-link";
 import { db, schema } from "@/db";
 import { ensurePersonalWorkspace } from "@/server/workspaces";
 import { actionEmail, sendEmail } from "./email";
-import { env } from "./env";
+import { env, isDesktop } from "./env";
 
 function createAuth() {
   const e = env();
@@ -65,7 +65,8 @@ function createAuth() {
       },
     },
     emailVerification: {
-      sendOnSignUp: true,
+      // The desktop app's local account has no mailbox.
+      sendOnSignUp: !isDesktop(),
       autoSignInAfterVerification: true,
       sendVerificationEmail: async ({ user, url }) => {
         const m = actionEmail("Verify your email", "Confirm your address to secure your account.", url, "Verify email");

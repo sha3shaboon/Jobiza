@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { isDesktop } from "@/lib/env";
 import { libraryCounts } from "@/server/library";
 import { requireSession } from "@/server/session";
 import { getSettings } from "@/server/settings";
@@ -10,7 +11,8 @@ export default async function Dashboard() {
   const { user } = await requireSession();
   const [settings, library] = await Promise.all([getSettings(user.id), libraryCounts(user.id)]);
   const steps = [
-    { done: true, title: "Create your account", detail: "Done.", href: null },
+    // The desktop app has no account to create.
+    ...(isDesktop() ? [] : [{ done: true, title: "Create your account", detail: "Done.", href: null }]),
     {
       done: settings.hasApiKey,
       title: "Add your Anthropic API key",
@@ -37,7 +39,7 @@ export default async function Dashboard() {
       <div>
         <h1 className="text-3xl font-semibold tracking-[-0.02em]">Hello, {user.name.split(" ")[0]}</h1>
         <p className="mt-2 text-lg text-muted">
-          {steps.every((s) => s.done) ? "You're all set. Ask your library anything." : "Four steps and your library is ready to grow."}
+          {steps.every((s) => s.done) ? "You're all set. Ask your library anything." : `${steps.length === 4 ? "Four" : "Three"} steps and your library is ready to grow.`}
         </p>
 
         <ol className="mt-10 grid">

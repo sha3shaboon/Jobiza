@@ -1,5 +1,18 @@
 import type { NextConfig } from "next";
 
+// ONNX runtime ships binaries for every OS; keep only the one this build runs on
+// (Linux for Docker, Windows for the desktop installer).
+const os = process.platform === "win32" ? "win32" : process.platform === "darwin" ? "darwin" : "linux";
+const otherOses = ["linux", "darwin", "win32"].filter((o) => o !== os);
+const ortDir = `./node_modules/onnxruntime-node/bin/napi-v*/${os}`;
+// Only the CPU runtime: the GPU providers are hundreds of MB.
+const ortFiles = {
+  linux: [`${ortDir}/*/onnxruntime_binding.node`, `${ortDir}/*/libonnxruntime.so*`, `${ortDir}/*/libonnxruntime_providers_shared.so`],
+  darwin: [`${ortDir}/*/onnxruntime_binding.node`, `${ortDir}/*/libonnxruntime*.dylib`],
+  // onnxruntime.dll is built with DirectML, so it needs the DirectX DLLs next to it.
+  win32: [`${ortDir}/x64/*`],
+}[os];
+
 const nextConfig: NextConfig = {
   output: "standalone",
   // Native/ML packages load at runtime instead of being bundled.
@@ -14,6 +27,9 @@ const nextConfig: NextConfig = {
     "@citation-js/plugin-csl",
     "@citation-js/plugin-bibtex",
     "@citation-js/plugin-ris",
+    // Embedded Postgres for the desktop app (loads its WASM files from disk).
+    "@electric-sql/pglite",
+    "@electric-sql/pglite-pgvector",
   ],
   // transformers.js loads its native ONNX runtime dynamically, so tracing misses it.
   outputFileTracingIncludes: {
@@ -22,12 +38,16 @@ const nextConfig: NextConfig = {
     "/api/v1/conversations/\\[id\\]/messages": [
       "./node_modules/onnxruntime-node/package.json",
       "./node_modules/onnxruntime-node/dist/**/*",
-      "./node_modules/onnxruntime-node/bin/napi-v*/linux/*/onnxruntime_binding.node",
-      "./node_modules/onnxruntime-node/bin/napi-v*/linux/*/libonnxruntime.so*",
-      "./node_modules/onnxruntime-node/bin/napi-v*/linux/*/libonnxruntime_providers_shared.so",
+      ...ortFiles,
       "./node_modules/onnxruntime-common/**/*",
       "./node_modules/sharp/**/*",
-      "./node_modules/@img/sharp-*linux*/**/*",
+      `./node_modules/@img/sharp-*${os}*/**/*`,
+    ],
+    // Desktop app: embedded Postgres (WASM + extensions) and the SQL migrations it applies at start-up.
+    "/api/desktop/**": [
+      "./node_modules/@electric-sql/pglite/dist/**/*",
+      "./node_modules/@electric-sql/pglite-pgvector/dist/**/*",
+      "./drizzle/**/*",
     ],
   },
   // CPU-only servers: skip the GPU providers (~270 MB).
@@ -35,8 +55,10 @@ const nextConfig: NextConfig = {
     "/**": [
       "./node_modules/onnxruntime-node/bin/**/libonnxruntime_providers_cuda.so",
       "./node_modules/onnxruntime-node/bin/**/libonnxruntime_providers_tensorrt.so",
-      "./node_modules/onnxruntime-node/bin/napi-v*/darwin/**/*",
-      "./node_modules/onnxruntime-node/bin/napi-v*/win32/**/*",
+      ...otherOses.map((o) => `./node_modules/onnxruntime-node/bin/napi-v*/${o}/**/*`),
+      // The Windows installer targets x64 only.
+      "./node_modules/onnxruntime-node/bin/napi-v*/win32/arm64/**/*",
+      "./node_modules/@electric-sql/pglite/dist/**/*.map",
     ],
   },
   cacheComponents: true,

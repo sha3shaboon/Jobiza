@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Logo } from "@/components/logo";
 import { NavLinks } from "@/components/nav-links";
 import { UserMenu } from "@/components/user-menu";
+import { isDesktop } from "@/lib/env";
 import { requireSession } from "@/server/session";
 
 async function SessionGate({ children }: { children: React.ReactNode }) {
@@ -12,12 +13,12 @@ async function SessionGate({ children }: { children: React.ReactNode }) {
         <div className="flex items-center justify-between px-4 py-4 md:px-5 md:py-6">
           <Logo href="/app" className="text-[25px]" />
           <div className="md:hidden">
-            <UserMenu name={user.name} email={user.email} compact />
+            <UserMenu name={user.name} email={user.email} desktop={isDesktop()} compact />
           </div>
         </div>
         <NavLinks />
         <div className="mt-auto hidden border-t border-[var(--field-border)] p-4 md:block">
-          <UserMenu name={user.name} email={user.email} />
+          <UserMenu name={user.name} email={user.email} desktop={isDesktop()} />
         </div>
       </aside>
       <main id="main" className="min-w-0 flex-1 px-4 py-10 sm:px-10">

@@ -3,14 +3,16 @@
 import { useRouter } from "next/navigation";
 import { signOut } from "@/lib/auth-client";
 
-export function UserMenu({ name, email, compact = false }: { name: string; email: string; compact?: boolean }) {
+export function UserMenu({ name, email, compact = false, desktop = false }: { name: string; email: string; compact?: boolean; desktop?: boolean }) {
   const router = useRouter();
-  const displayEmail = email.endsWith("@orcid.invalid") ? "Signed in with ORCID" : email;
+  const displayEmail = desktop ? "Library on this computer" : email.endsWith("@orcid.invalid") ? "Signed in with ORCID" : email;
   const onSignOut = async () => {
     await signOut();
     router.push("/");
     router.refresh();
   };
+  // The desktop app has one local account and nothing to sign out of.
+  if (compact && desktop) return null;
   if (compact) {
     return (
       <button className="btn-ghost min-h-9 px-2.5 text-sm text-[var(--field-muted)] hover:bg-field-2 hover:text-[var(--field-text)]" onClick={onSignOut} title={`Signed in as ${name}`}>
@@ -27,9 +29,11 @@ export function UserMenu({ name, email, compact = false }: { name: string; email
         <div className="truncate text-sm font-medium">{name}</div>
         <div className="truncate text-xs text-muted">{displayEmail}</div>
       </div>
-      <button className="btn-ghost min-h-9 px-2.5 text-sm text-[var(--field-muted)] hover:bg-field-2 hover:text-[var(--field-text)]" onClick={onSignOut}>
-        Sign out
-      </button>
+      {!desktop && (
+        <button className="btn-ghost min-h-9 px-2.5 text-sm text-[var(--field-muted)] hover:bg-field-2 hover:text-[var(--field-text)]" onClick={onSignOut}>
+          Sign out
+        </button>
+      )}
     </div>
   );
 }

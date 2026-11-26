@@ -1,0 +1,22 @@
+{
+  "name": "jobiza-desktop",
+  "productName": "Jobiza",
+  "version": "0.1.0",
+  "description": "Jobiza: your research library, reviews and writing, on your own computer.",
+  "author": "Jobiza",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": {
+    "prepare-server": "node scripts/prepare-server.mjs",
+    "start": "electron .",
+    "dist:win": "npm run prepare-server && electron-builder --win nsis --x64 --publish never",
+    "dist:dir": "npm run prepare-server && electron-builder --dir --publish never"
+  },
+  "devDependencies": {
+    "electron": "45.4.1",
+    "electron-builder": "26.18.1",
+    "pdf-lib": "1.17.1",
+    "playwright": "1.63.0"
+  }
+}
