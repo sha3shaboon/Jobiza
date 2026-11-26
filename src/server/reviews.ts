@@ -14,6 +14,7 @@ import { env } from "@/lib/env";
 import { prismaFlow } from "@/lib/review/prisma";
 import { ingestPaper } from "./ingest";
 import { LibraryError, workspaceFor } from "./library";
+import { enqueueIngest } from "./queue";
 import { hybridSearch } from "./retrieval";
 import {
   claudeFor,
@@ -104,6 +105,9 @@ function toRecordDto(r: ReviewRecord) {
     abstract: r.abstract,
     doi: r.doi,
     url: r.url,
+    pmid: r.pmid,
+    arxivId: r.arxivId,
+    citationCount: r.citationCount,
     sources: r.sources,
     openAccess: Boolean(r.openAccessPdfUrl),
     screening: r.screening,
@@ -116,6 +120,54 @@ function toRecordDto(r: ReviewRecord) {
   };
 }
 export type ReviewRecordDto = ReturnType<typeof toRecordDto>;
+
+/**
+ * Records opened for reading outside the retrieve step finish in the background;
+ * bring their status up to date from the library paper.
+ */
+async function settleReading(records: ReviewRecord[]) {
+  const waiting = records.filter((r) => r.fullText === "pending" && r.paperId);
+  if (!waiting.length) return records;
+  const papers = await db()
+    .select({ id: schema.paper.id, status: schema.paper.status, metadataOnly: schema.paper.metadataOnly })
+    .from(schema.paper)
+    .where(inArray(schema.paper.id, waiting.map((r) => r.paperId!)));
+  const byId = new Map(papers.map((p) => [p.id, p]));
+  for (const r of waiting) {
+    const p = byId.get(r.paperId!);
+    if (!p || p.status === "queued" || p.status === "processing") continue;
+    const fullText = p.status === "ready" ? (p.metadataOnly ? "abstract_only" : "retrieved") : "failed";
+    await db().update(schema.reviewRecord).set({ fullText }).where(eq(schema.reviewRecord.id, r.id));
+    r.fullText = fullText;
+  }
+  return records;
+}
+
+/** Open any found paper for reading: adds it to the library and fetches its text (open access when there is one). */
+export async function readRecord(userId: string, reviewId: string, recordId: string) {
+  const review = await ownedReview(userId, reviewId);
+  const record = await db().query.reviewRecord.findFirst({
+    where: and(eq(schema.reviewRecord.id, recordId), eq(schema.reviewRecord.reviewId, reviewId)),
+  });
+  if (!record) throw new LibraryError("Paper not found.", 404);
+  if (record.paperId && record.fullText !== "failed") return toRecordDto(record);
+  const paperId = await libraryPaperFor(review, record);
+  if (!paperId) throw new LibraryError("Jobiza has no link to this paper's text. Try the publisher's site.", 422);
+  const paper = await db().query.paper.findFirst({ where: eq(schema.paper.id, paperId) });
+  // A new paper, or one that failed before, gets (re)processed; one already in the library is reused as is.
+  if (!paper || paper.status === "queued" || paper.status === "failed") {
+    await db().update(schema.paper).set({ status: "queued", statusDetail: null }).where(eq(schema.paper.id, paperId));
+    await enqueueIngest(paperId);
+  }
+  const [row] = await db()
+    .update(schema.reviewRecord)
+    .set({ paperId, fullText: "pending" })
+    .where(eq(schema.reviewRecord.id, record.id))
+    .returning();
+  await log(review.id, "read", `Opened “${record.title}” for reading.`);
+  const [settled] = await settleReading([row]);
+  return toRecordDto(settled);
+}
 
 export async function getReviewDetail(userId: string, reviewId: string) {
   const review = await ownedReview(userId, reviewId);
@@ -146,7 +198,7 @@ export async function getReviewDetail(userId: string, reviewId: string) {
       synthesisCitations: review.synthesisCitations,
       createdAt: review.createdAt.toISOString(),
     },
-    records: records.map(toRecordDto),
+    records: (await settleReading(records)).map(toRecordDto),
     prisma: prismaFlow(review.counts, records),
     unavailableSources: review.counts?.unavailable ?? [],
     events: events.map((e) => ({ id: e.id, kind: e.kind, message: e.message, at: e.createdAt.toISOString() })),

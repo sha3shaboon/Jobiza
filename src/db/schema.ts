@@ -398,6 +398,27 @@ export type ClaimCheck = {
   suggestion?: { paperId: string; paperTitle: string; page: number; quote: string };
 };
 
+/** One section of a proposal outline: what Claude writes under that heading. */
+export type ProposalSection = { id: string; heading: string; guidance: string; cites: boolean };
+
+export const PROPOSAL_TYPES = ["thesis", "grant", "protocol"] as const;
+export type ProposalType = (typeof PROPOSAL_TYPES)[number];
+
+/** The brief and outline a proposal was written from; kept so sections can be redrafted. */
+export type ProposalPlan = {
+  type: ProposalType;
+  topic: string;
+  question: string;
+  field: string;
+  timeframe: string;
+  length: "short" | "full";
+  reviewId: string | null;
+  scopePaperIds: string[];
+  researchQuestions: string[];
+  aims: string[];
+  sections: ProposalSection[];
+};
+
 export const document = pgTable(
   "document",
   {
@@ -412,6 +433,9 @@ export const document = pgTable(
     /** TipTap/ProseMirror JSON. Citation nodes reference paper ids. */
     content: jsonb("content").$type<Record<string, unknown>>().notNull().default({ type: "doc", content: [{ type: "paragraph" }] }),
     citationStyle: text("citation_style").notNull().default("apa"),
+    /** "document" (free writing) or "proposal" (written from `proposal`). */
+    kind: text("kind").notNull().default("document"),
+    proposal: jsonb("proposal").$type<ProposalPlan>(),
     checks: jsonb("checks").$type<ClaimCheck[]>(),
     checkedAt: timestamp("checked_at", { withTimezone: true }),
     ...timestamps,

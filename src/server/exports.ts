@@ -41,7 +41,7 @@ export function toMarkdown(input: Input): string {
       .join("");
   const lines = [`# ${input.title}`, ""];
   for (const b of blocks) {
-    if (b.kind === "heading") lines.push(`${"#".repeat(Math.min(6, b.level + 1))} ${md(b.runs)}`, "");
+    if (b.kind === "heading") lines.push(`${"#".repeat(Math.min(6, b.level))} ${md(b.runs)}`, "");
     else if (b.kind === "paragraph") lines.push(md(b.runs), "");
     else if (b.kind === "quote") lines.push(`> ${md(b.runs)}`, "");
     else {

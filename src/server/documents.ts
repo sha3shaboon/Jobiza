@@ -26,10 +26,10 @@ export async function listDocuments(userId: string) {
   const rows = await db().query.document.findMany({
     where: eq(schema.document.userId, userId),
     orderBy: [desc(schema.document.updatedAt)],
-    columns: { id: true, title: true, updatedAt: true, citationStyle: true },
+    columns: { id: true, title: true, kind: true, updatedAt: true, citationStyle: true },
     limit: 200,
   });
-  return rows.map((r) => ({ id: r.id, title: r.title, citationStyle: r.citationStyle, updatedAt: r.updatedAt.toISOString() }));
+  return rows.map((r) => ({ id: r.id, title: r.title, kind: r.kind, citationStyle: r.citationStyle, updatedAt: r.updatedAt.toISOString() }));
 }
 
 export async function ownedDocument(userId: string, id: string): Promise<Doc> {

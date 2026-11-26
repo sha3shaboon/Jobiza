@@ -13,7 +13,7 @@ const PdfViewer = dynamic(() => import("./pdf-viewer").then((m) => m.PdfViewer),
   loading: () => <div className="h-[70vh] animate-pulse rounded-[14px] bg-surface-2" aria-label="Loading PDF…" />,
 });
 
-type Paper = PaperSummary & { abstract: string | null };
+export type Paper = PaperSummary & { abstract: string | null };
 
 export function PaperView({ paper, initialPage, highlight }: { paper: Paper; initialPage: number; highlight: string }) {
   const byline = paperByline(paper);
@@ -65,7 +65,7 @@ export function PaperView({ paper, initialPage, highlight }: { paper: Paper; ini
 }
 
 /** Web articles and abstract-only papers: show the extracted text, one section at a time. */
-function SectionViewer({ paper, initialSection, highlight }: { paper: Paper; initialSection: number; highlight: string }) {
+export function SectionViewer({ paper, initialSection, highlight }: { paper: Paper; initialSection: number; highlight: string }) {
   const total = paper.pageCount ?? 1;
   const [section, setSection] = useState(Math.min(initialSection, total));
   const [text, setText] = useState<string | null>(null);

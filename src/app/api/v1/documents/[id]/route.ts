@@ -12,7 +12,7 @@ export async function GET(_req: Request, ctx: Ctx) {
   try {
     const d = await ownedDocument(session.user.id, (await ctx.params).id);
     return Response.json({
-      document: { id: d.id, title: d.title, content: d.content, citationStyle: d.citationStyle, checks: d.checks, checkedAt: d.checkedAt?.toISOString() ?? null, updatedAt: d.updatedAt.toISOString() },
+      document: { id: d.id, title: d.title, kind: d.kind, proposal: d.proposal, content: d.content, citationStyle: d.citationStyle, checks: d.checks, checkedAt: d.checkedAt?.toISOString() ?? null, updatedAt: d.updatedAt.toISOString() },
     });
   } catch (err) {
     return errorResponse(err);

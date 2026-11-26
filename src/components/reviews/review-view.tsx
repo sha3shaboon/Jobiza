@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Answer } from "@/components/ask/answer";
 import { api } from "@/lib/client-api";
 import type { ReviewDetail } from "@/server/reviews";
+import { PaperReader } from "./paper-reader";
 import { STATUS_TEXT } from "./reviews-list";
 import { PrismaPanel } from "./prisma-panel";
 import { ScreeningPanel } from "./screening-panel";
@@ -23,11 +24,21 @@ export function ReviewView({ initial }: { initial: ReviewDetail }) {
   const running = RUNNING.includes(review.status);
   const included = records.filter((r) => r.screening === "included");
   const readable = included.filter((r) => r.fullText === "retrieved" || r.fullText === "abstract_only");
-  const [tab, setTab] = useState<Tab>(() => {
+  const [tab, setTabState] = useState<Tab>(() => {
     if (review.synthesis) return "synthesis";
     if (review.mode === "screening" && records.length === 0) return "setup";
-    return review.mode === "screening" ? "screening" : "prisma";
+    return records.length ? "screening" : "prisma";
   });
+  const [picked, setPicked] = useState(false);
+  const setTab = (t: Tab) => {
+    setPicked(true);
+    setTabState(t);
+  };
+  const [readingId, setReadingId] = useState<string | null>(null);
+  const reading = readingId ? records.find((r) => r.id === readingId) : undefined;
+
+  // Show the papers as soon as the search finds them, unless the reader chose a tab.
+  if (!picked && tab === "prisma" && records.length > 0) setTabState("screening");
 
   const refresh = useCallback(async () => {
     setData(await api<ReviewDetail>(`/api/v1/reviews/${review.id}`));
@@ -44,7 +55,7 @@ export function ReviewView({ initial }: { initial: ReviewDetail }) {
   const [wasRunning, setWasRunning] = useState(running);
   if (wasRunning !== running) {
     setWasRunning(running);
-    if (!running && review.synthesis) setTab("synthesis");
+    if (!running && review.synthesis) setTabState("synthesis");
   }
 
   async function runStep(step: Step) {
@@ -58,7 +69,7 @@ export function ReviewView({ initial }: { initial: ReviewDetail }) {
 
   const tabs: { id: Tab; label: string; count?: number; show: boolean }[] = [
     { id: "setup", label: "Setup", show: true },
-    { id: "screening", label: "Screening", count: records.length, show: records.length > 0 },
+    { id: "screening", label: "Papers", count: records.length, show: records.length > 0 },
     { id: "studies", label: "Studies", count: included.length, show: included.length > 0 },
     { id: "synthesis", label: "Synthesis", show: Boolean(review.synthesis) || readable.length > 0 },
     { id: "prisma", label: "PRISMA & log", show: true },
@@ -116,18 +127,24 @@ export function ReviewView({ initial }: { initial: ReviewDetail }) {
 
       <div className="py-8" role="tabpanel">
         {tab === "setup" && <SetupPanel data={data} running={running} onChange={setData} onRun={runStep} />}
-        {tab === "screening" && <ScreeningPanel data={data} running={running} onChange={setData} onRun={runStep} refresh={refresh} />}
-        {tab === "studies" && <StudiesTable data={data} running={running} onRun={runStep} />}
+        {tab === "screening" && <ScreeningPanel data={data} running={running} onChange={setData} onRun={runStep} refresh={refresh} onRead={setReadingId} />}
+        {tab === "studies" && <StudiesTable data={data} running={running} onRun={runStep} onRead={setReadingId} />}
         {tab === "synthesis" && (
           <section aria-label="Synthesis">
             {review.synthesis ? (
               <>
                 <Answer content={review.synthesis} citations={review.synthesisCitations} pending={false} error={null} />
-                {review.mode === "screening" && (
-                  <button className="btn-secondary mt-8" disabled={running} onClick={() => runStep("synthesize")}>
-                    Rewrite the synthesis
-                  </button>
-                )}
+                <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-border pt-6">
+                  <Link href={`/app/writing/proposal/new?review=${review.id}`} className="btn-primary">
+                    Plan a research proposal from this review
+                  </Link>
+                  {review.mode === "screening" && (
+                    <button className="btn-secondary" disabled={running} onClick={() => runStep("synthesize")}>
+                      Rewrite the synthesis
+                    </button>
+                  )}
+                  <p className="w-full text-sm text-muted">Claude uses the gaps in this synthesis to suggest research questions, and cites the studies the review read.</p>
+                </div>
               </>
             ) : (
               <div className="max-w-xl">
@@ -143,6 +160,16 @@ export function ReviewView({ initial }: { initial: ReviewDetail }) {
         )}
         {tab === "prisma" && <PrismaPanel data={data} />}
       </div>
+
+      {reading && (
+        <PaperReader
+          key={reading.id}
+          record={reading}
+          reviewId={review.id}
+          onRecord={(next) => setData((d) => ({ ...d, records: d.records.map((r) => (r.id === next.id ? next : r)) }))}
+          onClose={() => setReadingId(null)}
+        />
+      )}
     </div>
   );
 }

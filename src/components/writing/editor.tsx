@@ -4,13 +4,14 @@ import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/r
 import StarterKit from "@tiptap/starter-kit";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ClaimCheck } from "@/db/schema";
+import type { ClaimCheck, ProposalPlan } from "@/db/schema";
 import { api } from "@/lib/client-api";
 import type { CitationItem, DocNode } from "@/lib/writing/doc";
 import { CitationContext, CitationNode, type CitablePaper } from "./citation-node";
 import { CitationDialog, type CitationDialogState } from "./citation-dialog";
 import { ClaimChecks } from "./claim-checks";
 import { DraftDialog } from "./draft-dialog";
+import { ProposalPanel } from "./proposal-panel";
 
 type Rendered = { labels: Record<string, string>; bibliography: { html: string; text: string }[] };
 type SaveState = "saved" | "saving" | "unsaved" | "error";
@@ -36,7 +37,15 @@ export function WritingEditor({
   doc,
   papers,
 }: {
-  doc: { id: string; title: string; content: DocNode; citationStyle: string; checks: ClaimCheck[] | null; checkedAt: string | null };
+  doc: {
+    id: string;
+    title: string;
+    proposal: ProposalPlan | null;
+    content: DocNode;
+    citationStyle: string;
+    checks: ClaimCheck[] | null;
+    checkedAt: string | null;
+  };
   papers: CitablePaper[];
 }) {
   const [title, setTitle] = useState(doc.title);
@@ -48,7 +57,12 @@ export function WritingEditor({
   const [checks, setChecks] = useState<ClaimCheck[] | null>(doc.checks);
   const [checking, setChecking] = useState(false);
   const [checkError, setCheckError] = useState<string | null>(null);
-  const [panel, setPanel] = useState<"references" | "checks">(doc.checks?.length ? "checks" : "references");
+  const [panel, setPanel] = useState<"proposal" | "references" | "checks">(doc.proposal ? "proposal" : doc.checks?.length ? "checks" : "references");
+  // Set when the proposal wizard sends the user here to write every section.
+  const [autoWrite] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("write") === "all");
+  useEffect(() => {
+    if (autoWrite) window.history.replaceState(null, "", window.location.pathname);
+  }, [autoWrite]);
   const paperMap = useMemo(() => new Map(papers.map((p) => [p.id, p])), [papers]);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -205,9 +219,9 @@ export function WritingEditor({
             <EditorContent editor={editor} />
           </div>
 
-          <aside aria-label="References and checks" className="lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto lg:border-l lg:border-border lg:pl-8">
+          <aside aria-label={doc.proposal ? "Proposal, references and checks" : "References and checks"} className="lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto lg:border-l lg:border-border lg:pl-8">
             <div role="tablist" aria-label="Margin" className="mb-4 inline-flex rounded-[10px] bg-surface-2 p-1 text-sm">
-              {(["references", "checks"] as const).map((p) => (
+              {([...(doc.proposal ? (["proposal"] as const) : []), "references", "checks"] as const).map((p) => (
                 <button
                   key={p}
                   role="tab"
@@ -215,11 +229,20 @@ export function WritingEditor({
                   onClick={() => setPanel(p)}
                   className={`min-h-9 rounded-[8px] px-3 ${panel === p ? "bg-surface font-medium text-text ring-1 ring-border" : "text-muted hover:text-text"}`}
                 >
-                  {p === "references" ? `References (${rendered.bibliography.length})` : `Claim check${checks ? ` (${checks.length})` : ""}`}
+                  {p === "proposal" ? "Proposal" : p === "references" ? `References (${rendered.bibliography.length})` : `Claim check${checks ? ` (${checks.length})` : ""}`}
                 </button>
               ))}
             </div>
-            {panel === "references" ? (
+            {panel === "proposal" && doc.proposal ? (
+              <ProposalPanel
+                editor={editor}
+                docId={doc.id}
+                plan={doc.proposal}
+                autoStart={autoWrite}
+                beforeWrite={flush}
+                onWritten={() => editor && renderCitations(editor.getJSON() as DocNode, style)}
+              />
+            ) : panel === "references" ? (
               rendered.bibliography.length ? (
                 <ol className="doc-bibliography text-[15px] leading-relaxed">
                   {rendered.bibliography.map((b, i) => (

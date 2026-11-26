@@ -15,12 +15,14 @@ export function ScreeningPanel({
   onChange,
   onRun,
   refresh,
+  onRead,
 }: {
   data: ReviewDetail;
   running: boolean;
   onChange: (d: ReviewDetail) => void;
   onRun: (s: Step) => void;
   refresh: () => Promise<void>;
+  onRead: (recordId: string) => void;
 }) {
   const { review, records } = data;
   const [filter, setFilter] = useState<Filter>(records.some((r) => r.screening === "pending") ? "pending" : "included");
@@ -72,6 +74,12 @@ export function ScreeningPanel({
           </p>
         </div>
       )}
+      {!isScreening && running && (
+        <p className="mb-6 flex items-center gap-2 text-sm text-muted" aria-live="polite">
+          <span aria-hidden className="h-2 w-2 animate-pulse rounded-full bg-cite motion-reduce:animate-none" />
+          Claude is working through these papers. Open any of them to read it now.
+        </p>
+      )}
       {error && (
         <p role="alert" className="mb-4 rounded-[10px] bg-danger-soft px-3.5 py-2.5 text-sm text-danger">
           {error}
@@ -107,6 +115,7 @@ export function ScreeningPanel({
               editable={isScreening && !running}
               onSaved={patchRecord}
               onError={setError}
+              onRead={() => onRead(r.id)}
             />
           ))}
         </ul>
@@ -126,6 +135,7 @@ function RecordRow({
   editable,
   onSaved,
   onError,
+  onRead,
 }: {
   record: ReviewRecordDto;
   reviewId: string;
@@ -133,6 +143,7 @@ function RecordRow({
   editable: boolean;
   onSaved: (r: ReviewRecordDto) => void;
   onError: (e: string) => void;
+  onRead: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [excluding, setExcluding] = useState(false);
@@ -155,20 +166,15 @@ function RecordRow({
   }
 
   const byline = [formatAuthors(r.authors, 3), r.year, r.venue].filter(Boolean).join(", ");
-  const link = r.doi ? `https://doi.org/${r.doi}` : r.url;
 
   return (
     <li className="border-t border-border py-5">
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-8">
         <div className="min-w-0">
           <p className="text-[17px] font-medium break-words">
-            {link ? (
-              <a href={link} target="_blank" rel="noreferrer" className="hover:underline">
-                {r.title}
-              </a>
-            ) : (
-              r.title
-            )}
+            <button className="text-left hover:underline" onClick={onRead}>
+              {r.title}
+            </button>
           </p>
           {byline && <p className="mt-1 text-sm text-muted">{byline}</p>}
           <p className="mt-1 text-xs text-muted">
@@ -179,10 +185,13 @@ function RecordRow({
             <div className="mt-3 max-w-[44rem]">
               <p className={`text-[15px] leading-relaxed whitespace-pre-line ${open ? "" : "line-clamp-3"}`}>{r.abstract}</p>
               <button className="mt-1 text-sm text-muted underline underline-offset-2 hover:text-text" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
-                {open ? "Show less" : "Read the abstract"}
+                {open ? "Show less" : "Show the whole abstract"}
               </button>
             </div>
           )}
+          <button className="btn-secondary mt-3 min-h-9 px-3 text-sm" onClick={onRead}>
+            {r.fullText === "retrieved" ? "Read the paper" : "Open the paper"}
+          </button>
         </div>
 
         <div className="grid content-start gap-3">

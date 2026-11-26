@@ -105,6 +105,7 @@ Details:
 - **Sources**: OpenAlex, Semantic Scholar, arXiv and PubMed (25 results per query per source). Results are merged across sources by DOI, PMID, arXiv id or title, and duplicates are counted for PRISMA.
 - **Rate limits**: without API keys, OpenAlex, Semantic Scholar and arXiv share a small budget per IP address. A busy source is skipped and noted in the review, and the rest carry on. Free keys are in `.env.example`.
 - **Full text**: included studies are added to your library. PMC articles come from Europe PMC's open full-text API. When a publisher blocks the download, the abstract is used and the reason is shown.
+- **Reading the papers**: the *Papers* tab lists every record as soon as the search finds them, and keeps updating while Claude screens. Click any title (included, excluded or not yet screened) to open it in a reader panel: the abstract, Claude's screening note and table values, and links to the publisher, PubMed or arXiv. *Read the full text here* adds the paper to your library, fetches an open-access copy when there is one (otherwise the abstract), and shows the PDF in the panel. Reading a paper never changes its screening decision or the PRISMA counts.
 - **Audit trail**: the PRISMA tab shows identification, screening (with exclusion reasons), retrieval and inclusion counts plus an activity log. The screening log downloads as CSV, with every decision, who made it (you or Claude) and why.
 
 ## Sign-in providers
@@ -125,6 +126,16 @@ ORCID usually doesn't share email addresses, so ORCID accounts are keyed on the 
 - The decrypted key never leaves the server. The model list comes from the user's own key, so the picker only shows models that key can use.
 
 Rotating `ENCRYPTION_KEY` makes stored keys unreadable, so users would have to re-enter them.
+
+## How research proposals work
+
+*Writing → New research proposal*, or *Plan a research proposal from this review* on a review's synthesis.
+
+1. **Your idea**: the kind of proposal (thesis or dissertation, grant, or study protocol and research plan), the topic, your research question if you have one, field, time frame, section length, and which papers to build on: the whole library, a literature review, or papers you pick.
+2. **The plan**: Claude adapts the template for that kind of proposal to your topic. It suggests a working title, research questions, aims, and what each section should say, based on your library and, when linked, the review's synthesis and gaps. Edit any of it: rename, reorder, add or remove sections, and choose which ones cite the literature.
+3. **Writing**: the proposal opens in the editor and Claude writes the sections one after another. Each section sees the plan and the sections before it. Claims about existing research cite passages from your library as real citation nodes. Never invented studies or numbers. Decisions only you can make (sample size, budget figures) are left in `[square brackets]`. The *Proposal* tab in the margin shows each section's status, lets you stop, and redrafts any section with an optional note ("shorter", "focus on qualitative methods").
+
+A proposal is an ordinary document after that: cite, check claims, switch citation style and export to Word, PDF or LaTeX.
 
 ## How the writing editor works
 
@@ -171,6 +182,10 @@ Every endpoint accepts a session cookie or `Authorization: Bearer <token>`. The 
 | POST | `/api/v1/documents/:id/check` | Run the claim checker; returns and saves the checks |
 | GET | `/api/v1/documents/:id/export?format=` | `docx`, `pdf`, `latex` (zip), `markdown` or `bibtex` |
 | POST | `/api/v1/citations/render` | Labels and bibliography for `{ content, style }` |
+| POST | `/api/v1/reviews/:id/records/:recordId/read` | Add a found paper to the library and fetch its text for reading |
+| POST | `/api/v1/proposals/plan` | Claude's outline for a brief `{ type, topic, question?, field?, timeframe?, length?, reviewId?, scopePaperIds? }` (nothing saved) |
+| POST | `/api/v1/proposals` | Create a proposal document from `{ title, plan }` |
+| POST | `/api/v1/documents/:id/proposal-section` | Claude writes one section `{ sectionId, priorText?, note? }`; returns document nodes with citations |
 
 ## Project layout
 

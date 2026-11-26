@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/lib/client-api";
 
-type Doc = { id: string; title: string; citationStyle: string; updatedAt: string };
+type Doc = { id: string; title: string; kind: string; citationStyle: string; updatedAt: string };
 const date = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
 
 export function DocumentList({ documents }: { documents: Doc[] }) {
@@ -32,9 +32,14 @@ export function DocumentList({ documents }: { documents: Doc[] }) {
           <h1 className="text-3xl font-semibold tracking-[-0.02em]">Writing</h1>
           <p className="mt-2 text-lg text-muted">Draft with citations from your library, check every claim, and export to Word, PDF or LaTeX.</p>
         </div>
-        <button className="btn-primary" onClick={create} disabled={busy}>
-          {busy ? "Creating…" : "New document"}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/app/writing/proposal/new" className="btn-secondary">
+            New research proposal
+          </Link>
+          <button className="btn-primary" onClick={create} disabled={busy}>
+            {busy ? "Creating…" : "New document"}
+          </button>
+        </div>
       </div>
       {docs.length === 0 ? (
         <div className="mt-10 flex flex-col items-start gap-4 border-t border-border py-10 sm:flex-row sm:items-center">
@@ -42,7 +47,9 @@ export function DocumentList({ documents }: { documents: Doc[] }) {
           <img src="/illustrations/sprout-pot.svg" alt="" width={220} height={280} className="h-auto w-28" />
           <div>
             <p className="text-lg font-medium">No documents yet</p>
-            <p className="mt-1 max-w-md text-muted">Start a document and cite papers as you write, or ask Claude to draft a paragraph from your library.</p>
+            <p className="mt-1 max-w-md text-muted">
+              Start a document and cite papers as you write, or plan a research proposal and let Claude write each section from your library.
+            </p>
           </div>
         </div>
       ) : (
@@ -53,7 +60,10 @@ export function DocumentList({ documents }: { documents: Doc[] }) {
                 <Link href={`/app/writing/${d.id}`} className="text-lg font-medium break-words hover:underline">
                   {d.title}
                 </Link>
-                <p className="mt-1 text-sm text-muted">Edited {date.format(new Date(d.updatedAt))}</p>
+                <p className="mt-1 text-sm text-muted">
+                  {d.kind === "proposal" && <span className="mr-2 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent">Proposal</span>}
+                  Edited {date.format(new Date(d.updatedAt))}
+                </p>
               </div>
               <button className="btn-ghost min-h-10 px-3 text-sm hover:text-danger" onClick={() => remove(d)} aria-label={`Delete ${d.title}`}>
                 Delete

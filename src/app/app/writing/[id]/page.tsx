@@ -30,6 +30,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
       doc={{
         id: doc.id,
         title: doc.title,
+        proposal: doc.kind === "proposal" ? doc.proposal : null,
         content: doc.content as DocNode,
         citationStyle: doc.citationStyle,
         checks: doc.checks,

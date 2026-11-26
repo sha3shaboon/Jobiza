@@ -6,7 +6,7 @@ import type { ReviewDetail } from "@/server/reviews";
 import type { Step } from "./review-view";
 
 /** The comparison table: one row per included study, one column per question. */
-export function StudiesTable({ data, running, onRun }: { data: ReviewDetail; running: boolean; onRun: (s: Step) => void }) {
+export function StudiesTable({ data, running, onRun, onRead }: { data: ReviewDetail; running: boolean; onRun: (s: Step) => void; onRead: (recordId: string) => void }) {
   const { review, records } = data;
   const order = { retrieved: 0, abstract_only: 1, pending: 2, not_requested: 3, failed: 4 } as const;
   const included = records.filter((r) => r.screening === "included").sort((a, b) => order[a.fullText] - order[b.fullText]);
@@ -49,13 +49,9 @@ export function StudiesTable({ data, running, onRun }: { data: ReviewDetail; run
             {included.map((r) => (
               <tr key={r.id} className="border-t border-border align-top">
                 <th scope="row" className="px-4 py-3 font-normal">
-                  {r.paperId ? (
-                    <Link href={`/app/library/${r.paperId}`} className="font-medium hover:underline">
-                      {r.title}
-                    </Link>
-                  ) : (
-                    <span className="font-medium">{r.title}</span>
-                  )}
+                  <button className="text-left font-medium hover:underline" onClick={() => onRead(r.id)}>
+                    {r.title}
+                  </button>
                   <span className="mt-1 block text-muted">{[formatAuthors(r.authors, 2), r.year].filter(Boolean).join(", ")}</span>
                   {r.fullText !== "retrieved" && (
                     <span className="mt-1 block text-xs text-muted">

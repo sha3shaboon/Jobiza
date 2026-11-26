@@ -36,6 +36,13 @@
       "when": 1794984085193,
       "tag": "0004_writing",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795701902656,
+      "tag": "0005_proposals",
+      "breakpoints": true
     }
   ]
 }
