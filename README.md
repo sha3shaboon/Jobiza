@@ -51,7 +51,7 @@ With `SMTP_URL` empty, emails are printed to the web server console.
 
 The desktop app is the complete Jobiza (library, chat, literature reviews and writing) running on your own computer. There is no server to host and no account to create. Your PDFs, library and documents stay on disk; only Claude (with your own key) and paper searches go online.
 
-**Install:** download `Jobiza-Setup-<version>.exe` from the latest run of the *Desktop app (Windows)* workflow in GitHub Actions (artifact *Jobiza-Windows-installer*), then run it. The installer isn't code-signed yet, so Windows SmartScreen will warn you the first time: choose *More info*, then *Run anyway*. Windows 10 or 11, x64.
+**Install:** download `Jobiza-Setup-<version>.exe` from the latest [release](../../releases) (or the *Jobiza-Windows-installer* artifact of the latest *Desktop app (Windows)* workflow run), then run it. The installer isn't code-signed yet, so Windows SmartScreen will warn you the first time: choose *More info*, then *Run anyway*. Windows 10 or 11, x64.
 
 **Where things live:**
 
@@ -86,7 +86,7 @@ Build on the OS you're targeting: the server's native modules (ONNX runtime, sha
 
 The complete Jobiza on your phone: library, chat, literature reviews and writing. Like the desktop app, it keeps its own library on the device and needs no server. Pair it with the desktop app to keep both in sync (see below).
 
-**Install:** download **Jobiza-Android-phone-arm64** from the latest run of the *Android app* workflow in GitHub Actions, unzip it, and open `app-arm64-v8a-debug.apk` on the phone. Android asks you to allow installs from that source the first time. Android 8 or newer, 64-bit (almost every phone from 2017 on). The first launch unpacks the app (about 30 seconds); after that it opens in a few seconds.
+**Install:** download the `.apk` from the latest [release](../../releases) (or the **Jobiza-Android-phone-arm64** artifact of the latest *Android app* workflow run) and open it on the phone. Android asks you to allow installs from that source the first time. Android 8 or newer, 64-bit (almost every phone from 2017 on). The first launch unpacks the app (about 30 seconds); after that it opens in a few seconds.
 
 **On the phone:**
 
@@ -109,7 +109,20 @@ cd android && ./gradlew assembleDebug   # → app/build/outputs/apk/debug/app-ar
 
 You need Java 21 and the Android SDK (platform 36). CI builds both APKs (arm64 for phones, x86_64 for emulators and Chromebooks) and runs `mobile/scripts/emulator-smoke.sh` on an Android 14 emulator: launch, wait for the server, add a PDF the way *Share to Jobiza* does, wait until it's processed, share a link, and check nothing crashed.
 
-**Not yet:** a Play Store release (needs a signing key), iOS, and keeping long jobs alive in the background with a notification.
+**Signing:** Android only updates an installed app with an APK signed by the same key. Without a key, CI publishes a debug build (`…-debug.apk`), which later releases can't update in place. To sign releases, create a key once and add it to the repository's *Settings → Secrets and variables → Actions*:
+
+```bash
+keytool -genkeypair -v -keystore jobiza.keystore -alias jobiza -keyalg RSA -keysize 4096 -validity 10000
+base64 -w0 jobiza.keystore   # → secret ANDROID_KEYSTORE_BASE64
+```
+
+Also add `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` (`jobiza`) and `ANDROID_KEY_PASSWORD`. Keep the keystore file somewhere safe: losing it means users must reinstall to get updates.
+
+**Not yet:** a Play Store listing, iOS, and keeping long jobs alive in the background with a notification.
+
+## Releases
+
+Pushing a version tag (`git tag v0.1.0 && git push origin v0.1.0`) runs `.github/workflows/release.yml`: it builds and smoke-tests the Windows and Android apps, then publishes a GitHub release with the installer, the phone APK and `SHA256SUMS.txt`, using `docs/releases/<tag>.md` as the notes. The tag must match the version in `desktop/package.json` and `mobile/package.json`.
 
 ## Syncing your devices
 

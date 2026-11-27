@@ -3,7 +3,11 @@ name: Android app
 
 on:
   workflow_dispatch:
+  # The release workflow runs this too (see release.yml).
+  workflow_call:
   push:
+    # Branches only: a version tag runs the release workflow instead.
+    branches: ["**"]
     paths:
       - "mobile/**"
       - "src/**"
@@ -28,6 +32,7 @@ jobs:
     timeout-minutes: 75
     env:
       NEXT_TELEMETRY_DISABLED: "1"
+      HAS_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -68,6 +73,20 @@ jobs:
         working-directory: mobile/android
         run: ./gradlew assembleDebug --no-daemon
 
+      # With a signing key in the repository secrets, also build the release APK, so
+      # installs can be updated by later releases. See README → Android app → Signing.
+      - name: Build the signed release APK
+        if: ${{ env.HAS_KEY == 'true' }}
+        working-directory: mobile/android
+        env:
+          JOBIZA_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          JOBIZA_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          JOBIZA_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/jobiza.keystore"
+          JOBIZA_KEYSTORE="$RUNNER_TEMP/jobiza.keystore" ./gradlew assembleRelease --no-daemon
+          rm "$RUNNER_TEMP/jobiza.keystore"
+
       - name: Enable KVM for the emulator
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -85,11 +104,22 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
           script: bash mobile/scripts/emulator-smoke.sh mobile/android/app/build/outputs/apk/debug/app-x86_64-debug.apk smoke
 
+      - name: Pick the phone APK
+        run: |
+          mkdir -p mobile/out
+          version=$(node -p "require('./mobile/package.json').version")
+          if [ -f mobile/android/app/build/outputs/apk/release/app-arm64-v8a-release.apk ]; then
+            cp mobile/android/app/build/outputs/apk/release/app-arm64-v8a-release.apk "mobile/out/Jobiza-$version-android-arm64.apk"
+          else
+            cp mobile/android/app/build/outputs/apk/debug/app-arm64-v8a-debug.apk "mobile/out/Jobiza-$version-android-arm64-debug.apk"
+          fi
+          ls -la mobile/out
+
       - name: Upload the phone APK
         uses: actions/upload-artifact@v4
         with:
           name: Jobiza-Android-phone-arm64
-          path: mobile/android/app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
+          path: mobile/out/*.apk
           retention-days: 30
 
       - name: Upload smoke-test results

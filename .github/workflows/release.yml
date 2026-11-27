@@ -1,0 +1,63 @@
+# Publishes a GitHub release when a version tag is pushed (e.g. v0.1.0):
+# builds and smoke-tests the Windows and Android apps, then attaches them.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    uses: ./.github/workflows/desktop.yml
+    secrets: inherit
+
+  android:
+    uses: ./.github/workflows/android.yml
+    secrets: inherit
+
+  publish:
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the tag matches the app versions
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          for f in desktop/package.json mobile/package.json; do
+            v=$(node -p "require('./$f').version")
+            if [ "$v" != "$tag" ]; then echo "$f is version $v, but the tag is $GITHUB_REF_NAME"; exit 1; fi
+          done
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: Jobiza-Windows-installer
+          path: release
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: Jobiza-Android-phone-arm64
+          path: release
+
+      - name: Checksums
+        working-directory: release
+        run: |
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="docs/releases/${GITHUB_REF_NAME}.md"
+          [ -f "$notes" ] || notes=/dev/null
+          gh release create "$GITHUB_REF_NAME" release/* \
+            --title "Jobiza ${GITHUB_REF_NAME#v}" \
+            --notes-file "$notes" \
+            --prerelease \
+            --verify-tag

@@ -4,7 +4,11 @@ name: Desktop app (Windows)
 
 on:
   workflow_dispatch:
+  # The release workflow runs this too (see release.yml).
+  workflow_call:
   push:
+    # Branches only: a version tag runs the release workflow instead.
+    branches: ["**"]
     paths:
       - "desktop/**"
       - "src/**"
