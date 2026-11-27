@@ -1,6 +1,7 @@
-// Entry point for the app's server process (an Electron utility process).
-// Adds a clean shutdown the main process can ask for, then starts Next.js.
-// Windows has no SIGTERM, so the request arrives as a message instead.
+// Entry point for the local app's server process: an Electron utility process on
+// desktop, or a Node child process on Android. Adds a clean shutdown the app
+// can ask for, then starts Next.js. Windows has no SIGTERM, so there the request
+// arrives as a message instead.
 
 let stopping = false;
 
@@ -22,5 +23,8 @@ process.parentPort?.on("message", (e) => {
 });
 process.on("SIGTERM", () => void shutdown());
 process.on("SIGINT", () => void shutdown());
+
+// Android signals this process by its id, and stops a leftover one before starting another.
+if (process.env.JOBIZA_PID_FILE) require("node:fs").writeFileSync(process.env.JOBIZA_PID_FILE, String(process.pid));
 
 require("./server.js");

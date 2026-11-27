@@ -37,7 +37,7 @@ export default async function Dashboard() {
   return (
     <div className="mx-auto grid max-w-5xl gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,38rem)_1fr]">
       <div>
-        <h1 className="text-3xl font-semibold tracking-[-0.02em]">Hello, {user.name.split(" ")[0]}</h1>
+        <h1 className="text-3xl font-semibold tracking-[-0.02em]">{user.name === "You" ? "Welcome" : `Hello, ${user.name.split(" ")[0]}`}</h1>
         <p className="mt-2 text-lg text-muted">
           {steps.every((s) => s.done) ? "You're all set. Ask your library anything." : `${steps.length === 4 ? "Four" : "Three"} steps and your library is ready to grow.`}
         </p>

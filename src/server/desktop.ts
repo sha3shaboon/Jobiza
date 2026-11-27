@@ -5,6 +5,7 @@ import path from "node:path";
 import { db, pglite, schema } from "@/db";
 import { auth } from "@/lib/auth";
 import { env } from "@/lib/env";
+import { startInbox } from "./inbox";
 import { enqueueIngest } from "./queue";
 
 /**
@@ -84,5 +85,6 @@ export async function bootstrapDesktop() {
   await migrate();
   await ensureLocalUser();
   await recoverJobs();
+  await startInbox(LOCAL_EMAIL);
   console.info(`[desktop] ready in ${Date.now() - t} ms`);
 }

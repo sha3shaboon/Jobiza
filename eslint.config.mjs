@@ -16,6 +16,10 @@ const eslintConfig = defineConfig([
     "desktop/node_modules/**",
     "desktop/build/**",
     "desktop/dist/**",
+    // Android app: its own dependencies, the native project and generated bundles.
+    "mobile/node_modules/**",
+    "mobile/build/**",
+    "mobile/android/**",
   ]),
   // The Electron shell runs as plain CommonJS.
   { files: ["desktop/**/*.cjs"], rules: { "@typescript-eslint/no-require-imports": "off" } },

@@ -1,0 +1,20 @@
+{
+  "name": "jobiza-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Jobiza for Android: the whole app on the phone, with sync to your other devices.",
+  "scripts": {
+    "prepare-server": "node scripts/prepare-server.mjs",
+    "prepare-runtime": "node scripts/prepare-runtime.mjs",
+    "prepare-assets": "python3 scripts/pack_assets.py",
+    "sync": "cap sync android",
+    "build:apk": "npm run prepare-server && npm run prepare-runtime && npm run prepare-assets && cap sync android && cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.6.2",
+    "@capacitor/core": "8.6.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.2"
+  }
+}

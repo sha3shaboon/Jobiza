@@ -1,0 +1,22 @@
+{
+  "appId": "app.jobiza.mobile",
+  "appName": "Jobiza",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "backgroundColor": "#183021"
+  },
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": [
+      "127.0.0.1"
+    ]
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "native",
+      "style": "DARK"
+    }
+  }
+}

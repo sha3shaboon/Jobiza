@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The khubbayza blossom (src/app/icon.svg), centred in the adaptive icon's safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group android:translateX="24" android:translateY="24" android:scaleX="0.6" android:scaleY="0.6">
+        <group android:rotation="0" android:pivotX="50" android:pivotY="50">
+            <path android:fillColor="#FFFFFF" android:pathData="M50 50C43 46 33 33 37 20C39.5 12 47 11 50 18C53 11 60.5 12 63 20C67 33 57 46 50 50Z" />
+        </group>
+        <group android:rotation="72" android:pivotX="50" android:pivotY="50">
+            <path android:fillColor="#FFFFFF" android:pathData="M50 50C43 46 33 33 37 20C39.5 12 47 11 50 18C53 11 60.5 12 63 20C67 33 57 46 50 50Z" />
+        </group>
+        <group android:rotation="144" android:pivotX="50" android:pivotY="50">
+            <path android:fillColor="#FFFFFF" android:pathData="M50 50C43 46 33 33 37 20C39.5 12 47 11 50 18C53 11 60.5 12 63 20C67 33 57 46 50 50Z" />
+        </group>
+        <group android:rotation="216" android:pivotX="50" android:pivotY="50">
+            <path android:fillColor="#FFFFFF" android:pathData="M50 50C43 46 33 33 37 20C39.5 12 47 11 50 18C53 11 60.5 12 63 20C67 33 57 46 50 50Z" />
+        </group>
+        <group android:rotation="288" android:pivotX="50" android:pivotY="50">
+            <path android:fillColor="#FFFFFF" android:pathData="M50 50C43 46 33 33 37 20C39.5 12 47 11 50 18C53 11 60.5 12 63 20C67 33 57 46 50 50Z" />
+        </group>
+        <path android:fillColor="#000000" android:pathData="M43,50a7,7 0 1,0 14,0a7,7 0 1,0 -14,0" />
+    </group>
+</vector>

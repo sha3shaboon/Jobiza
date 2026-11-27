@@ -1,0 +1,6 @@
+node_modules/
+build/
+android/app/src/main/jniLibs/
+android/app/src/main/assets/server.zip
+android/app/src/main/assets/models.zip
+android/app/src/main/assets/bundle.json

@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
   serverExternalPackages: [
     "@huggingface/transformers",
     "onnxruntime-node",
+    "onnxruntime-web",
     "sharp",
     "unpdf",
     "pdfjs-dist",
