@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SettingsPanel } from "@/components/settings-panel";
 import { SyncPanel } from "@/components/sync-panel";
+import { UpdatesPanel } from "@/components/updates-panel";
 import { CITATION_STYLES } from "@/lib/citation-styles";
 import { isDesktop } from "@/lib/env";
 import { requireSession } from "@/server/session";
@@ -17,6 +18,7 @@ export default async function SettingsPage() {
       <p className="mt-2 text-lg text-muted">Your Anthropic key pays for the AI features. Jobiza never shares it.</p>
       <SettingsPanel initial={settings} citationStyles={[...CITATION_STYLES]} />
       {isDesktop() && <SyncPanel />}
+      {isDesktop() && <UpdatesPanel />}
     </div>
   );
 }

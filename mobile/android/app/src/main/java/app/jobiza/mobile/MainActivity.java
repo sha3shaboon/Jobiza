@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.URLUtil;
 import android.webkit.WebView;
 import android.widget.Toast;
@@ -49,12 +50,18 @@ public class MainActivity extends BridgeActivity implements JobizaServer.Listene
     private boolean openLibraryWhenReady;
     private boolean clearHistoryOnLoad;
     private WifiManager.MulticastLock discovery;
+    private Updater updater;
+    /** The page in the WebView, so only Jobiza's own pages can use the update bridge. */
+    private volatile String currentUrl = "";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         server = JobizaServer.get(this);
         WebView web = bridge.getWebView();
+        updater = Updater.get(this);
+        updater.setListener(state -> runOnUiThread(() -> bridge.getWebView().evaluateJavascript("window.__jobizaUpdate && window.__jobizaUpdate(" + state + ")", null)));
+        web.addJavascriptInterface(new UpdateBridge(), "JobizaAndroid");
 
         // There's no sign-in on the phone: if the app ever lands on it, sign in again.
         bridge.setWebViewClient(
@@ -62,6 +69,7 @@ public class MainActivity extends BridgeActivity implements JobizaServer.Listene
                 @Override
                 public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
                     super.doUpdateVisitedHistory(view, url, isReload);
+                    currentUrl = url;
                     if (server.isReady() && url.startsWith(server.baseUrl()) && (url.contains("/sign-in") || url.contains("/sign-up"))) {
                         view.loadUrl(server.sessionUrl("/app"));
                     }
@@ -70,6 +78,7 @@ public class MainActivity extends BridgeActivity implements JobizaServer.Listene
                 @Override
                 public void onPageFinished(WebView view, String url) {
                     super.onPageFinished(view, url);
+                    currentUrl = url;
                     if (!appLoaded) sendStatus();
                     // Forget the start-up page and sign-in redirect, so Back never returns to them.
                     if (clearHistoryOnLoad && url.startsWith(server.baseUrl() + "/app")) {
@@ -119,6 +128,7 @@ public class MainActivity extends BridgeActivity implements JobizaServer.Listene
         } catch (Exception e) {
             Log.w(TAG, "Device discovery unavailable", e);
         }
+        if (server.isReady()) updater.maybeCheck();
     }
 
     @Override
@@ -149,6 +159,7 @@ public class MainActivity extends BridgeActivity implements JobizaServer.Listene
 
     @Override
     public void onReady(String sessionUrl) {
+        updater.maybeCheck();
         appLoaded = true;
         clearHistoryOnLoad = true;
         String next = openLibraryWhenReady ? "/app/library" : "/app";
@@ -164,6 +175,41 @@ public class MainActivity extends BridgeActivity implements JobizaServer.Listene
 
     private void sendStatus() {
         bridge.getWebView().evaluateJavascript("window.jobizaStatus && jobizaStatus(" + JSONObject.quote(lastStatus) + ")", null);
+    }
+
+    /* ───────────── Updates ───────────── */
+
+    /** window.JobizaAndroid for Settings → Updates. Calls arrive on a background thread. */
+    private class UpdateBridge {
+
+        private boolean allowed() {
+            return server.isReady() && currentUrl.startsWith(server.baseUrl() + "/");
+        }
+
+        @JavascriptInterface
+        public String getUpdateState() {
+            return allowed() ? updater.state().toString() : "null";
+        }
+
+        @JavascriptInterface
+        public void setAutoUpdate(boolean on) {
+            if (allowed()) updater.setAuto(on);
+        }
+
+        @JavascriptInterface
+        public void checkForUpdate() {
+            if (allowed()) updater.check(false);
+        }
+
+        @JavascriptInterface
+        public void downloadUpdate() {
+            if (allowed()) updater.download();
+        }
+
+        @JavascriptInterface
+        public void installUpdate() {
+            if (allowed()) runOnUiThread(() -> updater.install(MainActivity.this, server::flush));
+        }
     }
 
     /* ───────────── Share to Jobiza ───────────── */

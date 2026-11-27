@@ -82,6 +82,24 @@ async function makePdf(file) {
   if (head !== "PK") throw new Error("The saved export isn't a Word document");
   console.log(`export saved after ${Date.now() - started} ms`);
 
+  // The update bridge answers, reports this version, and a check settles without crashing.
+  const version = require(path.join(__dirname, "..", "package.json")).version;
+  const updates = await win.evaluate(async () => {
+    const u = window.jobizaUpdates;
+    if (!u) return null;
+    const before = await u.getState();
+    await u.check();
+    for (let i = 0; i < 60; i++) {
+      const s = await u.getState();
+      if (s.status !== "checking") return { before, after: s };
+      await new Promise((r) => setTimeout(r, 500));
+    }
+    return { before, after: await u.getState() };
+  });
+  if (!updates) throw new Error("The update bridge is missing");
+  if (updates.before.version !== version) throw new Error(`The app reports version ${updates.before.version}, expected ${version}`);
+  console.log(`updates: ${updates.after.status}${updates.after.error ? ` (${updates.after.error})` : ""}${updates.after.latest ? `, latest ${updates.after.latest}` : ""}`);
+
   await app.close();
   const log = fs.readFileSync(fs.readdirSync(home, { recursive: true }).map((f) => path.join(home, String(f))).find((f) => f.endsWith("jobiza.log")), "utf8");
   if (!/server exited with code 0/.test(log)) throw new Error(`The server didn't shut down cleanly:\n${log.slice(-2000)}`);

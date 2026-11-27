@@ -48,6 +48,9 @@
 
         </activity>
 
+        <!-- Answers from Android's installer when Jobiza updates itself. -->
+        <receiver android:name=".InstallResultReceiver" android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -68,4 +71,6 @@
     <!-- Finding paired devices on the Wi-Fi network. -->
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- Installing its own updates from GitHub (Android asks you to confirm each one). -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 </manifest>

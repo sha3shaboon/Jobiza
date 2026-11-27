@@ -67,5 +67,4 @@ jobs:
           gh release create "$TAG" release/* \
             --title "Jobiza ${TAG#v}" \
             --notes-file "$notes" \
-            --prerelease \
             --target "$GITHUB_SHA"

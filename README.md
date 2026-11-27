@@ -120,9 +120,19 @@ Also add `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` (`jobiza`) and `ANDROI
 
 **Not yet:** a Play Store listing, iOS, and keeping long jobs alive in the background with a notification.
 
+## Updates
+
+The desktop and Android apps update themselves from this repository's GitHub releases. *Settings → Updates* shows the version, a switch for automatic updates (on by default) and *Check for updates*.
+
+- **Windows** uses electron-updater (`desktop/updater.cjs`): it reads `latest.yml` from the latest release, downloads the installer in the background, checks its SHA-512, and installs it when Jobiza closes, after the server has closed its database. A notification and an in-app banner offer *Restart and update*. With automatic updates off it only checks when asked (*Settings → Updates* or *Help → Check for updates…*).
+- **Android** (`Updater.java`) checks the GitHub API for the latest release, downloads the signed phone APK on Wi-Fi, verifies it against the release's `SHA256SUMS.txt`, and hands it to Android's installer, which asks you to confirm and only accepts an APK signed with the same key. Debug builds say they can't update themselves.
+- Pages reach these controls through a small bridge (`window.jobizaUpdates` on desktop, `window.JobizaAndroid` on Android) that only answers Jobiza's own pages.
+
+Releases must be regular releases (not pre-releases) to be offered as updates.
+
 ## Releases
 
-Pushing a version tag (`git tag v0.1.0 && git push origin v0.1.0`), or running the *Release* workflow from the Actions tab with a version number, runs `.github/workflows/release.yml`: it builds and smoke-tests the Windows and Android apps, then publishes a GitHub release with the installer, the phone APK and `SHA256SUMS.txt`, using `docs/releases/<tag>.md` as the notes. The tag must match the version in `desktop/package.json` and `mobile/package.json`.
+Pushing a version tag (`git tag v0.1.0 && git push origin v0.1.0`), or running the *Release* workflow from the Actions tab with a version number, runs `.github/workflows/release.yml`: it builds and smoke-tests the Windows and Android apps, then publishes a GitHub release with the installer and its update files (`latest.yml`, blockmap), the phone APK and `SHA256SUMS.txt`, using `docs/releases/<tag>.md` as the notes. The tag must match the version in `desktop/package.json` and `mobile/package.json`.
 
 ## Syncing your devices
 

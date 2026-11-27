@@ -1,7 +1,7 @@
 {
   "name": "jobiza-desktop",
   "productName": "Jobiza",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Jobiza: your research library, reviews and writing, on your own computer.",
   "author": "Jobiza",
   "license": "UNLICENSED",
@@ -18,5 +18,8 @@
     "electron-builder": "26.18.1",
     "pdf-lib": "1.17.1",
     "playwright": "1.63.0"
+  },
+  "dependencies": {
+    "electron-updater": "6.8.12"
   }
 }

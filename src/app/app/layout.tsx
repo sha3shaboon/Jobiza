@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Logo } from "@/components/logo";
 import { NavLinks } from "@/components/nav-links";
+import { UpdateBanner } from "@/components/updates-panel";
 import { UserMenu } from "@/components/user-menu";
 import { isDesktop } from "@/lib/env";
 import { requireSession } from "@/server/session";
@@ -22,6 +23,7 @@ async function SessionGate({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
       <main id="main" className="min-w-0 flex-1 px-4 py-10 sm:px-10">
+        {isDesktop() && <UpdateBanner />}
         {children}
       </main>
     </div>

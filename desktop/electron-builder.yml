@@ -7,8 +7,16 @@ copyright: Jobiza
 directories:
   output: dist
   buildResources: build-resources
+# Updates come from this repository's GitHub releases (latest.yml + the installer).
+publish:
+  - provider: github
+    owner: sha3shaboon
+    repo: Jobiza
+    releaseType: release
 files:
   - main.cjs
+  - updater.cjs
+  - preload.cjs
   - splash.html
   - splash-logo.png
   - build-resources/icon.png

@@ -1,12 +1,13 @@
 // Jobiza desktop: runs the full app on this computer. The Next.js server runs
 // in a utility process with an embedded database; this window talks to it
 // over 127.0.0.1 on a random port. Only Claude and paper searches go online.
-const { app, BrowserWindow, Menu, Notification, dialog, safeStorage, session, shell, utilityProcess } = require("electron");
+const { app, BrowserWindow, Menu, Notification, dialog, ipcMain, safeStorage, session, shell, utilityProcess } = require("electron");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const net = require("node:net");
 const os = require("node:os");
 const path = require("node:path");
+const updater = require("./updater.cjs");
 
 const isPackaged = app.isPackaged;
 const resources = isPackaged ? process.resourcesPath : path.join(__dirname, "build");
@@ -236,7 +237,14 @@ function createMainWindow() {
     backgroundColor: "#ffffff",
     autoHideMenuBar: true,
     icon: path.join(__dirname, "build-resources", "icon.png"),
-    webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false, spellcheck: true },
+    webPreferences: {
+      sandbox: true,
+      contextIsolation: true,
+      nodeIntegration: false,
+      spellcheck: true,
+      // Exposes only window.jobizaUpdates (see preload.cjs).
+      preload: path.join(__dirname, "preload.cjs"),
+    },
   });
   if (bounds.maximized) mainWindow.maximize();
 
@@ -346,6 +354,54 @@ function handleDownloads() {
   });
 }
 
+/* ───────────── Updates ───────────── */
+
+/** Only Jobiza's own pages may use the update controls. */
+function fromApp(event) {
+  return Boolean(serverUrl) && isAppUrl(event.senderFrame?.url ?? "");
+}
+
+function setupUpdates() {
+  updater.setup({
+    log,
+    onChange: (state) => mainWindow?.webContents.send("updates:state", state),
+    // Close the database cleanly before the installer replaces the app.
+    beforeInstall: async () => {
+      quitting = true;
+      await stopServer();
+    },
+  });
+  const handle = (channel, fn) =>
+    ipcMain.handle(channel, (event, ...args) => {
+      if (!fromApp(event)) throw new Error("Not allowed");
+      return fn(...args);
+    });
+  handle("updates:get", () => updater.getState());
+  handle("updates:check", () => updater.check());
+  handle("updates:download", () => updater.download());
+  handle("updates:install", () => updater.install());
+  handle("updates:set-auto", (on) => updater.setAuto(on));
+}
+
+async function checkFromMenu() {
+  const state = await updater.check();
+  const done = () => updater.getState();
+  // Wait for the check to settle, then say what happened.
+  for (let i = 0; i < 60 && done().status === "checking"; i++) await new Promise((r) => setTimeout(r, 500));
+  const s = done();
+  const message =
+    s.status === "unsupported"
+      ? s.error
+      : s.status === "latest"
+        ? `You have the latest version (${s.version}).`
+        : s.status === "error"
+          ? s.error
+          : s.status === "ready"
+            ? `Jobiza ${s.latest} is ready. It installs when you close Jobiza.`
+            : `Jobiza ${s.latest ?? state.latest} is available. ${s.auto ? "It's downloading now." : "Download it from Settings, Updates."}`;
+  await dialog.showMessageBox(mainWindow ?? undefined, { type: "info", title: "Updates", message: message ?? "Couldn't check for updates." });
+}
+
 function buildMenu() {
   const template = [
     ...(process.platform === "darwin" ? [{ role: "appMenu" }] : []),
@@ -369,6 +425,7 @@ function buildMenu() {
       submenu: [
         { label: "Show library folder", click: () => shell.openPath(DATA_DIR) },
         { label: "Show log file", click: () => shell.openPath(path.join(LOG_DIR, "jobiza.log")) },
+        { label: "Check for updates…", click: () => void checkFromMenu() },
         { type: "separator" },
         { label: `Jobiza ${app.getVersion()}`, enabled: false },
       ],
@@ -393,6 +450,7 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(async () => {
     buildMenu();
     handleDownloads();
+    setupUpdates();
     showSplash();
     try {
       await startServer();

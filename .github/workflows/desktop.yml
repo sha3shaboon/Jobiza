@@ -73,7 +73,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Jobiza-Windows-installer
-          path: desktop/dist/*.exe
+          # latest.yml and the blockmap are what installed apps read to update themselves.
+          path: |
+            desktop/dist/*.exe
+            desktop/dist/*.exe.blockmap
+            desktop/dist/latest.yml
           retention-days: 30
 
       - name: Upload smoke-test screenshots
