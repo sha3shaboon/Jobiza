@@ -60,6 +60,8 @@ const nextConfig: NextConfig = {
       // The Windows installer targets x64 only.
       "./node_modules/onnxruntime-node/bin/napi-v*/win32/arm64/**/*",
       "./node_modules/@electric-sql/pglite/dist/**/*.map",
+      // The WebAssembly ONNX runtime is only for Android, whose build script adds the files it needs.
+      "./node_modules/onnxruntime-web/**/*",
     ],
   },
   cacheComponents: true,

@@ -36,6 +36,26 @@ copy(path.join(root, ".next", "static"), path.join(server, ".next", "static"));
 copy(path.join(root, "public"), path.join(server, "public"));
 copy(path.join(desktop, "server-entry.cjs"), path.join(server, "server-entry.cjs"));
 for (const f of fs.readdirSync(server)) if (f.startsWith(".env")) fs.rmSync(path.join(server, f));
+
+// Next's standalone output links some packages (.next/node_modules/<name>-<hash>) to
+// absolute paths on the build machine. Replace each link with a real copy of the
+// package inside this bundle; Windows installers can't carry symlinks reliably.
+function materializeLinks(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, entry.name);
+    if (entry.isSymbolicLink()) {
+      const target = path.resolve(dir, fs.readlinkSync(p));
+      const rel = path.relative(standalone, target);
+      const inBundle = !rel.startsWith("..") && !path.isAbsolute(rel) ? path.join(server, rel) : target;
+      fs.rmSync(p, { force: true });
+      fs.cpSync(inBundle, p, { recursive: true, dereference: true });
+    } else if (entry.isDirectory()) {
+      materializeLinks(p);
+    }
+  }
+}
+materializeLinks(server);
+
 // The production server never reads source maps.
 for (const dir of [path.join(server, "node_modules", "@electric-sql")]) {
   for (const f of fs.readdirSync(dir, { recursive: true })) if (String(f).endsWith(".map")) fs.rmSync(path.join(dir, String(f)));

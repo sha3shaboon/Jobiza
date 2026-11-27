@@ -112,6 +112,8 @@ async function startServer() {
     JOBIZA_LAUNCH_TOKEN: launchToken,
     JOBIZA_LOCAL_PASSWORD: secrets.localPassword,
     JOBIZA_LOCAL_NAME: displayName(),
+    // How this computer appears to paired devices (renamable in Settings).
+    JOBIZA_DEVICE_NAME: displayName() === "You" ? "This computer" : `${displayName()}'s computer`,
     BETTER_AUTH_SECRET: secrets.authSecret,
     BETTER_AUTH_URL: serverUrl,
     ENCRYPTION_KEY: secrets.encryptionKey,

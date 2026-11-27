@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import {
+  bigint,
   boolean,
   customType,
   index,
@@ -103,6 +104,7 @@ export const userSettings = pgTable("user_settings", {
   anthropicKeyVerifiedAt: timestamp("anthropic_key_verified_at", { withTimezone: true }),
   model: text("model"),
   citationStyle: text("citation_style").notNull().default("apa"),
+  syncSeq: bigint("sync_seq", { mode: "number" }),
   ...timestamps,
 });
 
@@ -153,6 +155,8 @@ export const paper = pgTable(
   "paper",
   {
     id: text("id").primaryKey(),
+    /** Set by a trigger on every write; devices sync "changes since N" (see drizzle/0006_sync.sql). */
+    syncSeq: bigint("sync_seq", { mode: "number" }),
     workspaceId: text("workspace_id")
       .notNull()
       .references(() => workspace.id, { onDelete: "cascade" }),
@@ -229,6 +233,8 @@ export const conversation = pgTable(
   "conversation",
   {
     id: text("id").primaryKey(),
+    /** Set by a trigger on every write; devices sync "changes since N" (see drizzle/0006_sync.sql). */
+    syncSeq: bigint("sync_seq", { mode: "number" }),
     workspaceId: text("workspace_id")
       .notNull()
       .references(() => workspace.id, { onDelete: "cascade" }),
@@ -263,6 +269,8 @@ export const message = pgTable(
   "message",
   {
     id: text("id").primaryKey(),
+    /** Set by a trigger on every write; devices sync "changes since N" (see drizzle/0006_sync.sql). */
+    syncSeq: bigint("sync_seq", { mode: "number" }),
     conversationId: text("conversation_id")
       .notNull()
       .references(() => conversation.id, { onDelete: "cascade" }),
@@ -303,6 +311,8 @@ export const review = pgTable(
   "review",
   {
     id: text("id").primaryKey(),
+    /** Set by a trigger on every write; devices sync "changes since N" (see drizzle/0006_sync.sql). */
+    syncSeq: bigint("sync_seq", { mode: "number" }),
     workspaceId: text("workspace_id")
       .notNull()
       .references(() => workspace.id, { onDelete: "cascade" }),
@@ -338,6 +348,8 @@ export const reviewRecord = pgTable(
   "review_record",
   {
     id: text("id").primaryKey(),
+    /** Set by a trigger on every write; devices sync "changes since N" (see drizzle/0006_sync.sql). */
+    syncSeq: bigint("sync_seq", { mode: "number" }),
     reviewId: text("review_id")
       .notNull()
       .references(() => review.id, { onDelete: "cascade" }),
@@ -375,6 +387,8 @@ export const reviewEvent = pgTable(
   "review_event",
   {
     id: text("id").primaryKey(),
+    /** Set by a trigger on every write; devices sync "changes since N" (see drizzle/0006_sync.sql). */
+    syncSeq: bigint("sync_seq", { mode: "number" }),
     reviewId: text("review_id")
       .notNull()
       .references(() => review.id, { onDelete: "cascade" }),
@@ -423,6 +437,8 @@ export const document = pgTable(
   "document",
   {
     id: text("id").primaryKey(),
+    /** Set by a trigger on every write; devices sync "changes since N" (see drizzle/0006_sync.sql). */
+    syncSeq: bigint("sync_seq", { mode: "number" }),
     workspaceId: text("workspace_id")
       .notNull()
       .references(() => workspace.id, { onDelete: "cascade" }),
@@ -481,3 +497,63 @@ export const workspaceMemberRelations = relations(workspaceMember, ({ one }) => 
   workspace: one(workspace, { fields: [workspaceMember.workspaceId], references: [workspace.id] }),
   user: one(user, { fields: [workspaceMember.userId], references: [user.id] }),
 }));
+
+/* ───────────── Device sync (desktop and Android apps) ───────────── */
+
+/** Deleted rows, so a delete on one device reaches the others. Written by triggers. */
+export const syncTombstone = pgTable(
+  "sync_tombstone",
+  {
+    tableName: text("table_name").notNull(),
+    rowId: text("row_id").notNull(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }).notNull().defaultNow(),
+    syncSeq: bigint("sync_seq", { mode: "number" }),
+  },
+  (t) => [primaryKey({ columns: [t.tableName, t.rowId] }), index("sync_tombstone_seq_idx").on(t.syncSeq)],
+);
+
+/** This device's identity, shown to paired devices. One row. */
+export const syncDevice = pgTable("sync_device", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  enabled: boolean("enabled").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** A device this one syncs with. The shared key is encrypted with ENCRYPTION_KEY. */
+export const syncPeer = pgTable("sync_peer", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  keyCiphertext: text("key_ciphertext").notNull(),
+  addresses: jsonb("addresses").$type<string[]>().notNull().default([]),
+  port: integer("port").notNull(),
+  /** Highest change number received from this peer. */
+  cursor: bigint("cursor", { mode: "number" }).notNull().default(0),
+  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }),
+  lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
+  lastError: text("last_error"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** A pairing invitation shown as a QR code; valid for a few minutes and used once. */
+export const syncOffer = pgTable("sync_offer", {
+  id: text("id").primaryKey(),
+  secretCiphertext: text("secret_ciphertext").notNull(),
+  shareApiKey: boolean("share_api_key").notNull().default(false),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  pairedPeerId: text("paired_peer_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Rows from a peer whose parent hasn't arrived yet (e.g. a message before its conversation); retried after each batch. */
+export const syncPending = pgTable(
+  "sync_pending",
+  {
+    tableName: text("table_name").notNull(),
+    rowId: text("row_id").notNull(),
+    row: jsonb("row").$type<Record<string, unknown>>().notNull(),
+    children: jsonb("children").$type<Record<string, unknown>>(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.tableName, t.rowId] })],
+);

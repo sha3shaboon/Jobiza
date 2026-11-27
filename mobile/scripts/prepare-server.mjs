@@ -37,6 +37,31 @@ copy(path.join(root, "public"), path.join(server, "public"));
 copy(path.join(root, "desktop", "server-entry.cjs"), path.join(server, "server-entry.cjs"));
 for (const f of fs.readdirSync(server)) if (f.startsWith(".env")) rm(path.join(server, f));
 
+// Next's standalone output links some packages (.next/node_modules/<name>-<hash>) to
+// absolute paths on the build machine. Point them inside this bundle instead
+// (relative links, recreated on the phone from symlinks.json).
+function relativizeLinks(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, entry.name);
+    if (entry.isSymbolicLink()) {
+      const target = path.resolve(dir, fs.readlinkSync(p));
+      const rel = path.relative(standalone, target);
+      if (rel.startsWith("..") || path.isAbsolute(rel)) {
+        // Outside the build: bring a real copy in.
+        rm(p);
+        copy(target, p);
+      } else {
+        rm(p);
+        fs.symlinkSync(path.relative(dir, path.join(server, rel)), p);
+      }
+    } else if (entry.isDirectory()) {
+      relativizeLinks(p);
+    }
+  }
+}
+relativizeLinks(server);
+
+
 // 2. Native packages have no Android builds. transformers.js imports both at load
 //    time, so they become stand-ins; embeddings run on onnxruntime-web instead.
 const nm = path.join(server, "node_modules");

@@ -211,6 +211,7 @@ final class JobizaServer {
         env.put("ENCRYPTION_KEY", secrets.getString("encryptionKey"));
         env.put("UPLOAD_DIR", new File(dataDir(), "uploads").getPath());
         env.put("MODEL_CACHE_DIR", new File(files, "models").getPath());
+        env.put("JOBIZA_DEVICE_NAME", deviceName());
 
         rotateLog();
         process = pb.start();
@@ -348,6 +349,14 @@ final class JobizaServer {
     }
 
     /* ───────────── Helpers ───────────── */
+
+    /** "Pixel 9 Pro" rather than a code name, for the paired-devices list. */
+    private static String deviceName() {
+        String maker = android.os.Build.MANUFACTURER == null ? "" : android.os.Build.MANUFACTURER;
+        String model = android.os.Build.MODEL == null ? "Android phone" : android.os.Build.MODEL;
+        String name = model.toLowerCase().startsWith(maker.toLowerCase()) ? model : maker + " " + model;
+        return name.trim().isEmpty() ? "Android phone" : Character.toUpperCase(name.charAt(0)) + name.substring(1);
+    }
 
     private void status(Listener l, String text) {
         main.post(() -> l.onStatus(text));

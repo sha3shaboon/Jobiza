@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { env } from "@/lib/env";
 import { startInbox } from "./inbox";
 import { enqueueIngest } from "./queue";
+import { startSync } from "./sync/engine";
 
 /**
  * Desktop app start-up: everything the server's `migrate` service, worker and
@@ -86,5 +87,7 @@ export async function bootstrapDesktop() {
   await ensureLocalUser();
   await recoverJobs();
   await startInbox(LOCAL_EMAIL);
+  // Sync must never stop the app from opening.
+  await startSync(LOCAL_EMAIL).catch((err) => console.error("[sync] couldn't start:", (err as Error).message));
   console.info(`[desktop] ready in ${Date.now() - t} ms`);
 }

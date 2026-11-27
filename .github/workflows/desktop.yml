@@ -58,6 +58,9 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
         run: npm run dist:win
 
+      - name: Remove the build folders, so the test proves the app is self-contained
+        run: Remove-Item -Recurse -Force .next, desktop/build
+
       - name: Smoke test the packaged app
         working-directory: desktop
         run: node scripts/smoke.cjs dist/win-unpacked/Jobiza.exe

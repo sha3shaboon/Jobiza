@@ -303,7 +303,7 @@ function CitationCard({
 }
 
 /** One setting: explanation in the margin column, controls beside it. */
-function SettingRow({
+export function SettingRow({
   id,
   title,
   status,

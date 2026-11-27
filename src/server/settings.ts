@@ -78,3 +78,17 @@ export async function updatePreferences(userId: string, prefs: { model?: string;
     .values({ userId, ...prefs })
     .onConflictDoUpdate({ target: schema.userSettings.userId, set: prefs });
 }
+
+/** Stores a key another of the user's devices already verified (device pairing); no network check. */
+export async function storeVerifiedApiKey(userId: string, apiKey: string, verifiedAt: Date) {
+  const key = apiKey.trim();
+  const values = {
+    anthropicKeyCiphertext: encryptSecret(key, env().ENCRYPTION_KEY, aadFor(userId)),
+    anthropicKeyLast4: key.slice(-4),
+    anthropicKeyVerifiedAt: verifiedAt,
+  };
+  await db()
+    .insert(schema.userSettings)
+    .values({ userId, ...values })
+    .onConflictDoUpdate({ target: schema.userSettings.userId, set: values });
+}

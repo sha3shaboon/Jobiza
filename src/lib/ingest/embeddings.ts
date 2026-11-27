@@ -24,9 +24,12 @@ async function useWasmRuntime() {
   const key = Symbol.for("onnxruntime");
   const glob = globalThis as unknown as Record<symbol, unknown>;
   if (glob[key]) return;
-  const ort = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ "onnxruntime-web");
+  // A computed name keeps the build from tracing this package into desktop and server builds,
+  // which use the native runtime; the Android build adds the few files it needs.
+  const pkg = ["onnxruntime", "web"].join("-");
+  const ort = (await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ pkg)) as typeof import("onnxruntime-web");
   // The server runs from its own folder (standalone or dev); the bundler would rewrite require.resolve.
-  const dir = path.join(process.cwd(), "node_modules", "onnxruntime-web", "dist", path.sep);
+  const dir = path.join(process.cwd(), "node_modules", pkg, "dist", path.sep);
   ort.env.wasm.wasmPaths = dir;
   ort.env.wasm.numThreads = 1;
   glob[key] = ort;

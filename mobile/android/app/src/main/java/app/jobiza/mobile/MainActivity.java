@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -47,6 +48,7 @@ public class MainActivity extends BridgeActivity implements JobizaServer.Listene
     private boolean appLoaded;
     private boolean openLibraryWhenReady;
     private boolean clearHistoryOnLoad;
+    private WifiManager.MulticastLock discovery;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -101,6 +103,28 @@ public class MainActivity extends BridgeActivity implements JobizaServer.Listene
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         handleShare(intent);
+    }
+
+    /** Wi-Fi drivers drop broadcast packets unless an app asks for them: needed to find paired devices. */
+    @Override
+    public void onResume() {
+        super.onResume();
+        try {
+            if (discovery == null) {
+                WifiManager wifi = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+                discovery = wifi.createMulticastLock("jobiza-sync");
+                discovery.setReferenceCounted(false);
+            }
+            discovery.acquire();
+        } catch (Exception e) {
+            Log.w(TAG, "Device discovery unavailable", e);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        if (discovery != null && discovery.isHeld()) discovery.release();
+        super.onPause();
     }
 
     @Override
