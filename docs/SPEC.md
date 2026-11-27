@@ -30,6 +30,8 @@ every claim traced to a source.
 3. ✅ **Literature review** — source connectors, agentic deep-research job with progress streaming, screening mode + PRISMA log, comparison matrix.
 4. ✅ **Writing editor** — rich-text editor with inline citations, CSL styles, Zotero/BibTeX, claim checker, DOCX/PDF/LaTeX export.
 - ✅ **Desktop (Windows)** — Electron app that runs the full stack locally: embedded Postgres (PGlite + pgvector), in-process jobs, a single local account, NSIS installer built and smoke-tested in CI.
+- ✅ **Android** — Capacitor app running the same server on the phone (Termux's Node 24, WebAssembly embeddings), share-to-Jobiza and exports; APKs built and smoke-tested on an emulator in CI.
+- ✅ **Device sync** — paired devices exchange changes on the local network: change numbers and tombstones from triggers, newest edit wins, QR-code pairing with a per-pair AES-256-GCM key.
 5. **Polish** — public API docs for future desktop/mobile clients, tests, deployment guide.
 
 ## Brand

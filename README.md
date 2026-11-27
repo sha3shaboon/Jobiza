@@ -16,6 +16,8 @@ See [`docs/SPEC.md`](docs/SPEC.md) for the product decisions and the phased buil
 | 3. Literature review | Source connectors, agentic + screening modes, PRISMA log, matrix | ✅ done |
 | 4. Writing editor | CSL citations, Zotero/BibTeX, claim checker, DOCX/PDF/LaTeX export | ✅ done |
 | Desktop (Windows) | The whole app on one computer: embedded database, local jobs, no server | ✅ done |
+| Android | The whole app on the phone, same features, works offline | ✅ done |
+| Device sync | Paired desktops and phones swap changes on the same network, end-to-end encrypted | ✅ done |
 | 5. Polish | API docs for desktop/mobile clients, deploy guide | next |
 
 ## Run it with Docker (recommended)
@@ -79,6 +81,53 @@ node scripts/smoke.cjs dist/win-unpacked/Jobiza.exe   # optional end-to-end chec
 Build on the OS you're targeting: the server's native modules (ONNX runtime, sharp) are picked for the build machine. CI does this on `windows-latest` and runs the smoke test (launch, add a PDF, wait until it's processed, quit cleanly) before uploading the installer. `npm start` in `desktop/` runs the shell against `desktop/build/` for development.
 
 **Not yet:** macOS and Linux installers, code signing, automatic updates, and moving a library between the desktop app and a server.
+
+## Android app
+
+The complete Jobiza on your phone: library, chat, literature reviews and writing. Like the desktop app, it keeps its own library on the device and needs no server. Pair it with the desktop app to keep both in sync (see below).
+
+**Install:** download **Jobiza-Android-phone-arm64** from the latest run of the *Android app* workflow in GitHub Actions, unzip it, and open `app-arm64-v8a-debug.apk` on the phone. Android asks you to allow installs from that source the first time. Android 8 or newer, 64-bit (almost every phone from 2017 on). The first launch unpacks the app (about 30 seconds); after that it opens in a few seconds.
+
+**On the phone:**
+
+- **Share to Jobiza**: in any app, share a PDF, a link or a DOI to *Add to Jobiza*. It lands in your library and is processed like an upload.
+- **Exports** (Word, PDF, LaTeX, BibTeX) are saved to *Downloads/Jobiza* and open in the app you choose.
+- The back button goes back through pages; at the top it sends Jobiza to the background instead of closing it, so jobs keep running while Android lets them.
+- Android pauses background apps after a while. A literature review step that's interrupted that way can be run again from the review.
+
+**How it works:** it's the same Next.js server as the desktop app, running on the phone. Node.js 24 comes from [Termux](https://termux.dev)'s Android packages: `mobile/scripts/prepare-runtime.mjs` downloads them, checks their SHA-256 against Termux's index, and re-links them with patchelf so Android can install them as native libraries. The two packages with no Android build are replaced: embeddings run on the WebAssembly build of the ONNX runtime (results match the native runtime to about 0.999 cosine similarity, so vectors from either can be mixed), and the image library isn't needed. The Capacitor shell (`mobile/android/…/JobizaServer.java`) unpacks the server on first launch, keeps its secrets with the Android Keystore, starts Node on 127.0.0.1, and shows the app in a WebView. Data lives in the app's private storage; uninstalling removes it, so pair with a desktop first if you want a copy.
+
+**Build it yourself:**
+
+```bash
+npm ci && npm run build                 # the web app, as a standalone server
+cd mobile && npm ci && pip install patchelf
+npm run prepare-server && npm run prepare-runtime && npm run prepare-assets
+npx cap sync android
+cd android && ./gradlew assembleDebug   # → app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
+```
+
+You need Java 21 and the Android SDK (platform 36). CI builds both APKs (arm64 for phones, x86_64 for emulators and Chromebooks) and runs `mobile/scripts/emulator-smoke.sh` on an Android 14 emulator: launch, wait for the server, add a PDF the way *Share to Jobiza* does, wait until it's processed, share a link, and check nothing crashed.
+
+**Not yet:** a Play Store release (needs a signing key), iOS, and keeping long jobs alive in the background with a notification.
+
+## Syncing your devices
+
+The desktop and Android apps each keep a complete library and work on their own, offline included. Pair them, and whenever both are open on the same Wi-Fi network they swap changes: papers (with their PDFs, text and search data, so the phone never re-processes them), chats, literature reviews, documents and proposals, and your model and citation-style choices.
+
+**Pair:** on one device open *Settings → Devices and sync → Pair a new device*. It shows a QR code (and the same code as text) that works once, for 10 minutes. On the other device choose *Enter a pairing code*, then scan it with the camera or paste the text. You can also copy your Anthropic API key across at the same time.
+
+**What to expect:**
+
+- Sync runs every 45 seconds and straight away when a paired device appears on the network. *Sync now* does it on demand.
+- If both devices edit the same thing, the more recent edit wins. Deleting on one device deletes on the others, unless it was edited afterwards.
+- Work in progress waits: a paper still being processed, or a review step still running, syncs when it's done.
+- The API key is never synced after pairing; each device stores its own copy encrypted with its own key.
+- On Windows, the firewall asks once whether Jobiza may use the network: allow it on private networks.
+
+**How it's built** (`src/server/sync/`): triggers give every write in the synced tables a change number and record deletes as tombstones (migration `0006_sync`). Each device asks each peer for "changes since N" and applies them with *newest edit wins*; rows whose parent hasn't arrived yet wait in `sync_pending`. The pairing code carries a fresh 32-byte key, and everything devices send each other is compressed and sealed with AES-256-GCM using it, so traffic is unreadable on the network and only a paired device can talk to another. Devices listen on TCP port 47310 and announce themselves with a small UDP broadcast on port 47311 so they find each other again after an address change.
+
+**Not yet:** syncing across different networks (that needs a relay server) and more than one person sharing a library.
 
 ## How the library and chat work
 
@@ -198,6 +247,7 @@ src/server/         server-only services (settings, sessions, workspaces)
 worker/             BullMQ background worker
 drizzle/            SQL migrations
 desktop/            Electron shell, installer config and build scripts for the desktop app
+mobile/             Android app: Capacitor shell, Node runtime and server packaging scripts
 ```
 
 ## Scripts
