@@ -122,7 +122,7 @@ Also add `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` (`jobiza`) and `ANDROI
 
 ## Releases
 
-Pushing a version tag (`git tag v0.1.0 && git push origin v0.1.0`) runs `.github/workflows/release.yml`: it builds and smoke-tests the Windows and Android apps, then publishes a GitHub release with the installer, the phone APK and `SHA256SUMS.txt`, using `docs/releases/<tag>.md` as the notes. The tag must match the version in `desktop/package.json` and `mobile/package.json`.
+Pushing a version tag (`git tag v0.1.0 && git push origin v0.1.0`), or running the *Release* workflow from the Actions tab with a version number, runs `.github/workflows/release.yml`: it builds and smoke-tests the Windows and Android apps, then publishes a GitHub release with the installer, the phone APK and `SHA256SUMS.txt`, using `docs/releases/<tag>.md` as the notes. The tag must match the version in `desktop/package.json` and `mobile/package.json`.
 
 ## Syncing your devices
 

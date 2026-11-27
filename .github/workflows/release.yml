@@ -1,10 +1,16 @@
-# Publishes a GitHub release when a version tag is pushed (e.g. v0.1.0):
-# builds and smoke-tests the Windows and Android apps, then attaches them.
+# Publishes a GitHub release: builds and smoke-tests the Windows and Android apps,
+# then attaches them. Runs when a version tag is pushed (e.g. v0.1.0), or by hand
+# from the Actions tab with a version number (the tag is then created here).
 name: Release
 
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, without the v (must match desktop/ and mobile/package.json)"
+        required: true
 
 permissions:
   contents: read
@@ -23,15 +29,16 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      TAG: ${{ github.event_name == 'push' && github.ref_name || format('v{0}', inputs.version) }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Check the tag matches the app versions
         run: |
-          tag="${GITHUB_REF_NAME#v}"
           for f in desktop/package.json mobile/package.json; do
             v=$(node -p "require('./$f').version")
-            if [ "$v" != "$tag" ]; then echo "$f is version $v, but the tag is $GITHUB_REF_NAME"; exit 1; fi
+            if [ "v$v" != "$TAG" ]; then echo "$f is version $v, but the release is $TAG"; exit 1; fi
           done
 
       - uses: actions/download-artifact@v4
@@ -54,10 +61,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          notes="docs/releases/${GITHUB_REF_NAME}.md"
+          notes="docs/releases/${TAG}.md"
           [ -f "$notes" ] || notes=/dev/null
-          gh release create "$GITHUB_REF_NAME" release/* \
-            --title "Jobiza ${GITHUB_REF_NAME#v}" \
+          # A pushed tag is used as is; a run by hand creates the tag on this commit.
+          gh release create "$TAG" release/* \
+            --title "Jobiza ${TAG#v}" \
             --notes-file "$notes" \
             --prerelease \
-            --verify-tag
+            --target "$GITHUB_SHA"
