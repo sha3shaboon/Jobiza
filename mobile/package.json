@@ -1,6 +1,6 @@
 {
   "name": "jobiza-mobile",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Jobiza for Android: the whole app on the phone, with sync to your other devices.",
   "scripts": {

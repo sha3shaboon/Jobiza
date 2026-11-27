@@ -60,6 +60,28 @@ async function makePdf(file) {
   console.log(`PDF processed after ${Date.now() - started} ms`);
   await win.screenshot({ path: path.join(process.cwd(), "smoke-library.png") });
 
+  // Export a document the way the Export menu does, answering the Save dialog with a path.
+  const saveDir = path.join(home, "exports");
+  fs.mkdirSync(saveDir);
+  await app.evaluate(({ dialog }, target) => {
+    dialog.showSaveDialogSync = () => target;
+  }, path.join(saveDir, "Smoke export"));
+  const docId = await win.evaluate(async () => {
+    const res = await fetch("/api/v1/documents", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ title: "Smoke export" }) });
+    return (await res.json()).document.id;
+  });
+  await win.goto(new URL(`/app/writing/${docId}`, win.url()).href);
+  await win.locator(".ProseMirror").click();
+  await win.keyboard.type("A sentence to export.");
+  await win.getByRole("button", { name: "Export" }).click();
+  await win.getByRole("menuitem", { name: "Word (.docx)" }).click();
+  const saved = path.join(saveDir, "Smoke export.docx");
+  for (let i = 0; i < 60 && !fs.existsSync(saved); i++) await new Promise((r) => setTimeout(r, 500));
+  if (!fs.existsSync(saved)) throw new Error(`The export wasn't saved. Files: ${fs.readdirSync(saveDir).join(", ") || "none"}`);
+  const head = fs.readFileSync(saved).subarray(0, 2).toString("latin1");
+  if (head !== "PK") throw new Error("The saved export isn't a Word document");
+  console.log(`export saved after ${Date.now() - started} ms`);
+
   await app.close();
   const log = fs.readFileSync(fs.readdirSync(home, { recursive: true }).map((f) => path.join(home, String(f))).find((f) => f.endsWith("jobiza.log")), "utf8");
   if (!/server exited with code 0/.test(log)) throw new Error(`The server didn't shut down cleanly:\n${log.slice(-2000)}`);

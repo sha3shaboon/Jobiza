@@ -1,7 +1,7 @@
 // Jobiza desktop: runs the full app on this computer. The Next.js server runs
 // in a utility process with an embedded database; this window talks to it
 // over 127.0.0.1 on a random port. Only Claude and paper searches go online.
-const { app, BrowserWindow, Menu, dialog, safeStorage, shell, utilityProcess } = require("electron");
+const { app, BrowserWindow, Menu, Notification, dialog, safeStorage, session, shell, utilityProcess } = require("electron");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const net = require("node:net");
@@ -293,6 +293,59 @@ function createMainWindow() {
   mainWindow.loadURL(sessionUrl());
 }
 
+/* ───────────── Exports (downloads) ───────────── */
+
+const FILE_TYPES = {
+  docx: "Word document",
+  pdf: "PDF document",
+  zip: "LaTeX project (zip)",
+  md: "Markdown",
+  bib: "BibTeX references",
+  csv: "Spreadsheet (CSV)",
+};
+let lastExportFolder = null;
+
+/**
+ * Exports arrive as downloads. Electron's built-in Save dialog can offer the wrong
+ * file type on Windows, so the app asks where to save itself, with the right
+ * name and type, and says when the file is saved.
+ */
+function handleDownloads() {
+  session.defaultSession.on("will-download", (_event, item) => {
+    const name = item.getFilename();
+    const ext = path.extname(name).slice(1).toLowerCase();
+    const folder = lastExportFolder ?? app.getPath("downloads");
+    const target = dialog.showSaveDialogSync(mainWindow ?? undefined, {
+      title: "Save export",
+      defaultPath: path.join(folder, name),
+      filters: [...(FILE_TYPES[ext] ? [{ name: FILE_TYPES[ext], extensions: [ext] }] : []), { name: "All files", extensions: ["*"] }],
+    });
+    if (!target) {
+      item.cancel();
+      return;
+    }
+    // Keep the extension even if it was deleted from the name in the dialog.
+    const savePath = ext && !target.toLowerCase().endsWith(`.${ext}`) ? `${target}.${ext}` : target;
+    lastExportFolder = path.dirname(savePath);
+    item.setSavePath(savePath);
+    item.once("done", (_e, state) => {
+      if (state === "completed") {
+        log(`[desktop] saved export ${savePath}`);
+        if (Notification.isSupported()) {
+          const note = new Notification({ title: "Export saved", body: `${path.basename(savePath)} is in ${path.dirname(savePath)}. Click to show it.` });
+          note.on("click", () => shell.showItemInFolder(savePath));
+          note.show();
+        } else {
+          shell.showItemInFolder(savePath);
+        }
+      } else if (state !== "cancelled") {
+        log(`[desktop] export failed (${state}): ${savePath}`);
+        dialog.showErrorBox("Couldn't save the export", `${path.basename(savePath)} couldn't be saved (${state}). Check that the folder exists and you can write to it, then try again.`);
+      }
+    });
+  });
+}
+
 function buildMenu() {
   const template = [
     ...(process.platform === "darwin" ? [{ role: "appMenu" }] : []),
@@ -339,6 +392,7 @@ if (!app.requestSingleInstanceLock()) {
 
   app.whenReady().then(async () => {
     buildMenu();
+    handleDownloads();
     showSplash();
     try {
       await startServer();
